@@ -5,9 +5,11 @@ import { RecipeResult } from '../types';
 interface Props {
   result: RecipeResult;
   onReset: () => void;
+  onRegenerate: () => void;
+  onViewAlternative: (dishName: string) => void;
 }
 
-const ResultView: React.FC<Props> = ({ result, onReset }) => {
+const ResultView: React.FC<Props> = ({ result, onReset, onRegenerate, onViewAlternative }) => {
   const [tab, setTab] = useState<'easy' | 'gourmet'>('easy');
 
   return (
@@ -30,7 +32,7 @@ const ResultView: React.FC<Props> = ({ result, onReset }) => {
         <button
           onClick={() => setTab('easy')}
           className={`flex-1 py-4 text-sm font-black rounded-xl transition-all ${
-            tab === 'easy' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+            tab === 'easy' ? 'bg-white text-[#ff5d01] shadow-sm' : 'text-slate-500'
           }`}
         >
           ⚡ 간편 레시피
@@ -38,15 +40,15 @@ const ResultView: React.FC<Props> = ({ result, onReset }) => {
         <button
           onClick={() => setTab('gourmet')}
           className={`flex-1 py-4 text-sm font-black rounded-xl transition-all ${
-            tab === 'gourmet' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500'
+            tab === 'gourmet' ? 'bg-white text-[#ff5d01] shadow-sm' : 'text-slate-500'
           }`}
         >
           ✨ 셰프의 킥
         </button>
       </div>
 
-      <div className="bg-white rounded-3xl p-8 shadow-sm border border-slate-50">
-        <h3 className="text-xl font-black text-slate-900 mb-8 brand-orange-text">Step by Step</h3>
+      <div className="bg-white rounded-[32px] p-8 shadow-sm border border-slate-50">
+        <h3 className="text-xl font-black text-slate-900 mb-8 brand-orange-text">요리 순서</h3>
         <div 
           className="recipe-content prose prose-slate max-w-none text-slate-800 font-medium"
           dangerouslySetInnerHTML={{ __html: tab === 'easy' ? result.easyRecipe : result.gourmetRecipe }}
@@ -54,21 +56,56 @@ const ResultView: React.FC<Props> = ({ result, onReset }) => {
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-black text-slate-900">추천 퓨전 대안</h3>
-        {result.similarRecipes.map((recipe, idx) => (
-          <div key={idx} className="bg-orange-50/50 p-6 rounded-3xl border border-orange-100">
-            <h4 className="text-lg font-black text-orange-900 mb-1">{recipe.title}</h4>
-            <p className="text-sm text-orange-700 font-medium leading-relaxed">{recipe.reason}</p>
-          </div>
-        ))}
+        <h3 className="text-lg font-black text-slate-900">다른 퓨전 아이디어</h3>
+        <div className="grid gap-3">
+          {result.similarRecipes.map((recipe, idx) => (
+            <div key={idx} className="bg-orange-50/30 p-6 rounded-3xl border border-orange-100 flex flex-col gap-3">
+              <div>
+                <h4 className="text-lg font-black text-orange-900">{recipe.title}</h4>
+                <p className="text-sm text-orange-700/70 font-medium leading-relaxed">{recipe.reason}</p>
+              </div>
+              <button 
+                onClick={() => onViewAlternative(recipe.title)}
+                className="w-fit px-4 py-2 bg-white text-[#ff5d01] text-xs font-bold rounded-full border border-orange-100 hover:bg-orange-50 transition-all"
+              >
+                이 레시피 보기 ➔
+              </button>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="flex flex-col gap-4 pt-10">
+      {result.referenceLinks && result.referenceLinks.length > 0 && (
+        <div className="space-y-4">
+          <h3 className="text-lg font-black text-slate-900">관련 정보 링크</h3>
+          <div className="flex flex-wrap gap-2">
+            {result.referenceLinks.map((link, idx) => (
+              <a 
+                key={idx} 
+                href={link.url} 
+                target="_blank" 
+                rel="noreferrer"
+                className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-full hover:bg-slate-200 transition-all"
+              >
+                🔗 {link.title}
+              </a>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-3 pt-10">
+        <button
+          onClick={onRegenerate}
+          className="w-full py-6 bg-white border-2 border-[#ff5d01] text-[#ff5d01] font-bold text-lg rounded-2xl shadow-sm active:scale-95 transition-all"
+        >
+          🔄 다른 레시피 추천받기
+        </button>
         <button
           onClick={onReset}
           className="w-full py-6 bg-[#ff5d01] text-white font-bold text-lg rounded-2xl shadow-xl active:scale-95 transition-all"
         >
-          새로운 추천 받기
+          🏠 처음부터 다시하기
         </button>
       </div>
 
