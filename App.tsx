@@ -1,15 +1,15 @@
 
 import React, { useState } from 'react';
-import { Step, UserChoices, RecipeResult } from './types';
-import Header from './components/Header';
-import WelcomeStep from './components/steps/WelcomeStep';
-import IngredientsStep from './components/steps/IngredientsStep';
-import SuggestionStep from './components/steps/SuggestionStep';
-import PreferencesStep from './components/steps/PreferencesStep';
-import EnvironmentStep from './components/steps/EnvironmentStep';
-import LoadingStep from './components/steps/LoadingStep';
-import ResultView from './components/ResultView';
-import { generateRecipe, fetchSuggestions } from './services/gemini';
+import { Step, UserChoices, RecipeResult } from './types.ts';
+import Header from './components/Header.tsx';
+import WelcomeStep from './components/steps/WelcomeStep.tsx';
+import IngredientsStep from './components/steps/IngredientsStep.tsx';
+import SuggestionStep from './components/steps/SuggestionStep.tsx';
+import PreferencesStep from './components/steps/PreferencesStep.tsx';
+import EnvironmentStep from './components/steps/EnvironmentStep.tsx';
+import LoadingStep from './components/steps/LoadingStep.tsx';
+import ResultView from './components/ResultView.tsx';
+import { generateRecipe, fetchSuggestions } from './services/gemini.ts';
 
 const App: React.FC = () => {
   const [step, setStep] = useState<Step>(Step.Welcome);
@@ -36,7 +36,7 @@ const App: React.FC = () => {
       setStep(Step.Suggestions);
     } catch (err) {
       console.error("추천 로드 실패:", err);
-      setStep(Step.Suggestions); // 실패해도 다음 단계로 이동
+      setStep(Step.Suggestions);
     } finally {
       setIsSuggesting(false);
     }
