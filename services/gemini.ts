@@ -40,11 +40,12 @@ export const fetchSeasonalIngredients = async (excluded: string[] = []) => {
   return JSON.parse(jsonStr).items;
 };
 
-export const fetchConvenienceTopics = async () => {
+export const fetchConvenienceTopics = async (excluded: string[] = []) => {
   const ai = getAI();
   const prompt = `
     한국 편의점(GS25, CU, 세븐일레븐)에서 구할 수 있는 재료로 만들 수 있는 
     '자취생 꿀조합 레시피' 또는 '편의점 꿀조합' 메뉴 6가지를 추천해줘.
+    이미 추천한 메뉴들(${excluded.join(', ')})은 제외하고 새로운 걸로 추천해줘.
     유명한 조합(마크정식 등)이나 창의적인 신메뉴 조합을 섞어서 제안해줘.
     JSON 포맷으로 { items: [{ name: "메뉴명", desc: "간단 설명" }] } 형태로 반환해.
   `;

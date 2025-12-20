@@ -5,13 +5,24 @@ import { RecipeResult } from '../types';
 interface Props {
   result: RecipeResult;
   canGoBack: boolean;
+  canGoForward: boolean;
   onReset: () => void;
   onRegenerate: () => void;
   onViewAlternative: (dishName: string) => void;
   onGoBack: () => void;
+  onGoForward: () => void;
 }
 
-const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate, onViewAlternative, onGoBack }) => {
+const ResultView: React.FC<Props> = ({ 
+  result, 
+  canGoBack, 
+  canGoForward, 
+  onReset, 
+  onRegenerate, 
+  onViewAlternative, 
+  onGoBack, 
+  onGoForward 
+}) => {
   const [tab, setTab] = useState<'easy' | 'gourmet'>('easy');
 
   return (
@@ -44,7 +55,7 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
         </div>
       </div>
 
-      {/* 재료 목록 섹션 추가 */}
+      {/* 재료 목록 섹션 */}
       {result.ingredientsList && (
         <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-50">
           <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
@@ -125,14 +136,25 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
       )}
 
       <div className="flex flex-col gap-3 pt-10">
-        {canGoBack && (
-          <button
-            onClick={onGoBack}
-            className="w-full py-5 bg-orange-50 text-[#ff5d01] font-bold text-lg rounded-[24px] border border-orange-100 active:scale-95 transition-all flex items-center justify-center gap-2"
-          >
-            ⬅️ 이전 레시피 다시보기
-          </button>
-        )}
+        <div className="flex gap-2 w-full">
+          {canGoBack && (
+            <button
+              onClick={onGoBack}
+              className="flex-1 py-5 bg-orange-50 text-[#ff5d01] font-bold text-lg rounded-[24px] border border-orange-100 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              ⬅️ 이전
+            </button>
+          )}
+          {canGoForward && (
+            <button
+              onClick={onGoForward}
+              className="flex-1 py-5 bg-orange-50 text-[#ff5d01] font-bold text-lg rounded-[24px] border border-orange-100 active:scale-95 transition-all flex items-center justify-center gap-2"
+            >
+              다음 ➡️
+            </button>
+          )}
+        </div>
+        
         <button
           onClick={onRegenerate}
           className="w-full py-6 bg-white border-2 border-[#ff5d01] text-[#ff5d01] font-bold text-xl rounded-[24px] shadow-sm active:scale-95 transition-all"
@@ -158,8 +180,8 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
           display: flex; align-items: center; justify-content: center;
           border-radius: 12px; font-weight: 900; font-size: 0.9rem;
         }
-        .ingredients-list ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-        .ingredients-list li { display: flex; align-items: center; gap: 0.5rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.9rem; }
+        .ingredients-list ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: 1fr; gap: 0.5rem; }
+        .ingredients-list li { display: flex; align-items: center; gap: 0.5rem; background: #f8fafc; padding: 0.8rem 1rem; border-radius: 8px; font-size: 0.95rem; }
         .ingredients-list li::before { content: '•'; color: #ff5d01; font-weight: bold; }
       `}</style>
     </div>
