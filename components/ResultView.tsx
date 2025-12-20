@@ -4,12 +4,14 @@ import { RecipeResult } from '../types';
 
 interface Props {
   result: RecipeResult;
+  canGoBack: boolean;
   onReset: () => void;
   onRegenerate: () => void;
   onViewAlternative: (dishName: string) => void;
+  onGoBack: () => void;
 }
 
-const ResultView: React.FC<Props> = ({ result, onReset, onRegenerate, onViewAlternative }) => {
+const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate, onViewAlternative, onGoBack }) => {
   const [tab, setTab] = useState<'easy' | 'gourmet'>('easy');
 
   return (
@@ -110,6 +112,14 @@ const ResultView: React.FC<Props> = ({ result, onReset, onRegenerate, onViewAlte
       )}
 
       <div className="flex flex-col gap-3 pt-10">
+        {canGoBack && (
+          <button
+            onClick={onGoBack}
+            className="w-full py-5 bg-orange-50 text-[#ff5d01] font-bold text-lg rounded-[24px] border border-orange-100 active:scale-95 transition-all flex items-center justify-center gap-2"
+          >
+            ⬅️ 이전 레시피 다시보기
+          </button>
+        )}
         <button
           onClick={onRegenerate}
           className="w-full py-6 bg-white border-2 border-[#ff5d01] text-[#ff5d01] font-bold text-xl rounded-[24px] shadow-sm active:scale-95 transition-all"
