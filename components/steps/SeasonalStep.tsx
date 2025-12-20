@@ -9,20 +9,21 @@ interface Props {
   items: {name: string, desc: string}[];
   onNext: () => void;
   onBack: () => void;
+  onMore: () => void;
 }
 
-const SeasonalStep: React.FC<Props> = ({ choices, setChoices, items, onNext, onBack }) => {
+const SeasonalStep: React.FC<Props> = ({ choices, setChoices, items, onNext, onBack, onMore }) => {
   const toggleItem = (name: string) => {
-    const current = choices.ingredients;
-    if (current.includes(name)) {
+    const currentItems = choices.ingredients.split(',').map(s => s.trim()).filter(s => s !== "");
+    if (currentItems.includes(name)) {
       setChoices(prev => ({
         ...prev,
-        ingredients: current.split(',').map(s => s.trim()).filter(s => s !== name).join(', ')
+        ingredients: currentItems.filter(s => s !== name).join(', ')
       }));
     } else {
       setChoices(prev => ({
         ...prev,
-        ingredients: current ? `${current}, ${name}` : name
+        ingredients: choices.ingredients ? `${choices.ingredients}, ${name}` : name
       }));
     }
   };
@@ -30,7 +31,9 @@ const SeasonalStep: React.FC<Props> = ({ choices, setChoices, items, onNext, onB
   return (
     <div className="space-y-8 pt-12 step-transition">
       <div className="space-y-2">
-        <h2 className="text-2xl font-black text-slate-900">장바구니에 담아볼까요?</h2>
+        <h2 className="text-3xl font-black text-slate-900 leading-tight">
+          장바구니에<br/><span className="brand-orange-text">담아볼까요?</span>
+        </h2>
         <p className="text-slate-500 font-medium">지금 시즌에 가장 좋은 재료들이에요.</p>
       </div>
 
@@ -48,9 +51,15 @@ const SeasonalStep: React.FC<Props> = ({ choices, setChoices, items, onNext, onB
 
       <div className="pt-6 space-y-4">
         <button
+          onClick={onMore}
+          className="w-full py-5 bg-white border-2 border-[#ff5d01] text-[#ff5d01] text-lg font-bold rounded-2xl shadow-sm hover:bg-orange-50 transition-all"
+        >
+          🔍 다른 재료 더 보기
+        </button>
+        <button
           onClick={onNext}
           disabled={!choices.ingredients.trim()}
-          className="w-full py-5 bg-[#ff5d01] text-white text-lg font-bold rounded-2xl shadow-lg disabled:opacity-30"
+          className="w-full py-5 bg-[#ff5d01] text-white text-lg font-bold rounded-2xl shadow-lg shadow-orange-100 disabled:opacity-30 transition-all active:scale-95"
         >
           재료 선택 완료
         </button>

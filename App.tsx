@@ -30,19 +30,20 @@ const App: React.FC = () => {
   const [result, setResult] = useState<RecipeResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleNext = () => setStep(prev => (prev + 1) as Step);
-  const handleBack = () => {
-    // EnvironmentStep이 CuisineSelection 이후에 바로Preferences가 오도록 조정 (Tools 제거됨)
-    if (step === Step.Preferences) setStep(Step.Suggestions);
-    else setStep(prev => (prev - 1) as Step);
-  };
-
   const startSeasonalFlow = async () => {
     setIsLoading(true);
     setChoices(prev => ({ ...prev, mode: 'seasonal', ingredients: '' }));
-    const items = await fetchSeasonalIngredients();
+    const items = await fetchSeasonalIngredients([]);
     setSeasonalItems(items);
     setStep(Step.SeasonalSelection);
+    setIsLoading(false);
+  };
+
+  const loadMoreSeasonal = async () => {
+    setIsLoading(true);
+    const excludedNames = seasonalItems.map(i => i.name);
+    const moreItems = await fetchSeasonalIngredients(excludedNames);
+    setSeasonalItems(prev => [...prev, ...moreItems]);
     setIsLoading(false);
   };
 
@@ -59,21 +60,19 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
-  const startGeneration = async (overrideChoices?: UserChoices) => {
+  const startGeneration = async (isRegen: boolean = false, overridePrompt?: string) => {
     setStep(Step.Loading);
     try {
-      const recipe = await generateRecipe(overrideChoices || choices);
+      const finalChoices = overridePrompt 
+        ? { ...choices, theme: `✨ 선택된 메뉴: ${overridePrompt}` } 
+        : choices;
+      const recipe = await generateRecipe(finalChoices, isRegen);
       setResult(recipe);
       setStep(Step.Result);
     } catch (err) {
       alert("AI 셰프가 고민에 빠졌습니다. 다시 시도해 주세요!");
       setStep(Step.Welcome);
     }
-  };
-
-  const handleViewAlternative = async (dishName: string) => {
-    const newChoices = { ...choices, theme: `✨ 추천 대안: ${dishName}`, cuisine: '특화 추천' };
-    await startGeneration(newChoices);
   };
 
   const renderStep = () => {
@@ -83,13 +82,13 @@ const App: React.FC = () => {
       case Step.Welcome: return <WelcomeStep onNext={() => setStep(Step.ModeSelection)} />;
       case Step.ModeSelection: return <ModeSelectionStep onFridge={startFridgeFlow} onSeasonal={startSeasonalFlow} onBack={() => setStep(Step.Welcome)} />;
       case Step.Ingredients: return <IngredientsStep choices={choices} setChoices={setChoices} onNext={() => setStep(Step.CuisineSelection)} onBack={() => setStep(Step.ModeSelection)} />;
-      case Step.SeasonalSelection: return <SeasonalStep choices={choices} setChoices={setChoices} items={seasonalItems} onNext={() => setStep(Step.CuisineSelection)} onBack={() => setStep(Step.ModeSelection)} />;
+      case Step.SeasonalSelection: return <SeasonalStep choices={choices} setChoices={setChoices} items={seasonalItems} onNext={() => setStep(Step.CuisineSelection)} onBack={() => setStep(Step.ModeSelection)} onMore={loadMoreSeasonal} />;
       case Step.CuisineSelection: return <CuisineStep choices={choices} setChoices={setChoices} onNext={handleIngredientsComplete} onBack={() => choices.mode === 'fridge' ? setStep(Step.Ingredients) : setStep(Step.SeasonalSelection)} />;
       case Step.Suggestions: return <SuggestionStep choices={choices} setChoices={setChoices} suggestions={suggestions} onNext={() => setStep(Step.Preferences)} onBack={() => setStep(Step.CuisineSelection)} />;
       case Step.Preferences: return <PreferencesStep choices={choices} setChoices={setChoices} onNext={() => setStep(Step.Environment)} onBack={() => setStep(Step.Suggestions)} />;
       case Step.Environment: return <EnvironmentStep choices={choices} setChoices={setChoices} onGenerate={() => startGeneration()} onBack={() => setStep(Step.Preferences)} />;
       case Step.Loading: return <LoadingStep />;
-      case Step.Result: return result ? <ResultView result={result} onReset={() => setStep(Step.Welcome)} onRegenerate={() => startGeneration()} onViewAlternative={handleViewAlternative} /> : null;
+      case Step.Result: return result ? <ResultView result={result} onReset={() => setStep(Step.Welcome)} onRegenerate={() => startGeneration(true)} onViewAlternative={(title) => startGeneration(false, title)} /> : null;
       default: return <WelcomeStep onNext={() => setStep(Step.ModeSelection)} />;
     }
   };

@@ -66,9 +66,9 @@ const ResultView: React.FC<Props> = ({ result, onReset, onRegenerate, onViewAlte
               </div>
               <button 
                 onClick={() => onViewAlternative(recipe.title)}
-                className="w-fit px-4 py-2 bg-white text-[#ff5d01] text-xs font-bold rounded-full border border-orange-100 hover:bg-orange-50 transition-all"
+                className="w-fit px-5 py-2.5 bg-white text-[#ff5d01] text-sm font-bold rounded-full border border-orange-200 hover:bg-[#ff5d01] hover:text-white transition-all shadow-sm"
               >
-                이 레시피 보기 ➔
+                레시피 보기 ➔
               </button>
             </div>
           ))}
@@ -76,18 +76,19 @@ const ResultView: React.FC<Props> = ({ result, onReset, onRegenerate, onViewAlte
       </div>
 
       {result.referenceLinks && result.referenceLinks.length > 0 && (
-        <div className="space-y-4">
-          <h3 className="text-lg font-black text-slate-900">관련 정보 링크</h3>
-          <div className="flex flex-wrap gap-2">
+        <div className="space-y-4 pt-4">
+          <h3 className="text-lg font-black text-slate-900">유사한 음식 레시피 링크</h3>
+          <div className="flex flex-col gap-2">
             {result.referenceLinks.map((link, idx) => (
               <a 
                 key={idx} 
                 href={link.url} 
                 target="_blank" 
                 rel="noreferrer"
-                className="px-4 py-2 bg-slate-100 text-slate-600 text-xs font-bold rounded-full hover:bg-slate-200 transition-all"
+                className="w-full p-4 bg-slate-50 border border-slate-100 text-slate-600 text-sm font-bold rounded-2xl hover:bg-slate-100 transition-all flex justify-between items-center"
               >
-                🔗 {link.title}
+                <span>🔗 {link.title}</span>
+                <span className="text-slate-300">➔</span>
               </a>
             ))}
           </div>
@@ -97,13 +98,13 @@ const ResultView: React.FC<Props> = ({ result, onReset, onRegenerate, onViewAlte
       <div className="flex flex-col gap-3 pt-10">
         <button
           onClick={onRegenerate}
-          className="w-full py-6 bg-white border-2 border-[#ff5d01] text-[#ff5d01] font-bold text-lg rounded-2xl shadow-sm active:scale-95 transition-all"
+          className="w-full py-6 bg-white border-2 border-[#ff5d01] text-[#ff5d01] font-bold text-xl rounded-[24px] shadow-sm active:scale-95 transition-all"
         >
           🔄 다른 레시피 추천받기
         </button>
         <button
           onClick={onReset}
-          className="w-full py-6 bg-[#ff5d01] text-white font-bold text-lg rounded-2xl shadow-xl active:scale-95 transition-all"
+          className="w-full py-6 bg-[#ff5d01] text-white font-bold text-xl rounded-[24px] shadow-xl shadow-orange-200 active:scale-95 transition-all"
         >
           🏠 처음부터 다시하기
         </button>
