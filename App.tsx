@@ -5,13 +5,14 @@ import WelcomeStep from './components/steps/WelcomeStep.tsx';
 import ModeSelectionStep from './components/steps/ModeSelectionStep.tsx';
 import IngredientsStep from './components/steps/IngredientsStep.tsx';
 import SeasonalStep from './components/steps/SeasonalStep.tsx';
+import ConvenienceStep from './components/steps/ConvenienceStep.tsx';
 import CuisineStep from './components/steps/CuisineStep.tsx';
 import SuggestionStep from './components/steps/SuggestionStep.tsx';
 import PreferencesStep from './components/steps/PreferencesStep.tsx';
 import EnvironmentStep from './components/steps/EnvironmentStep.tsx';
 import LoadingStep from './components/steps/LoadingStep.tsx';
 import ResultView from './components/ResultView.tsx';
-import { generateRecipe, fetchSuggestions, fetchSeasonalIngredients, generateDishImage } from './services/gemini.ts';
+import { generateRecipe, fetchSuggestions, fetchSeasonalIngredients, fetchConvenienceTopics, generateDishImage } from './services/gemini.ts';
 
 const App: React.FC = () => {
   const [step, setStep] = useState<Step>(Step.Welcome);
@@ -27,6 +28,7 @@ const App: React.FC = () => {
   });
   const [suggestions, setSuggestions] = useState({ subIngredients: [], sauces: [] });
   const [seasonalItems, setSeasonalItems] = useState<{name: string, desc: string}[]>([]);
+  const [convenienceItems, setConvenienceItems] = useState<{name: string, desc: string}[]>([]);
   const [result, setResult] = useState<RecipeResult | null>(null);
   const [recipeHistory, setRecipeHistory] = useState<RecipeResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +39,15 @@ const App: React.FC = () => {
     const items = await fetchSeasonalIngredients([]);
     setSeasonalItems(items);
     setStep(Step.SeasonalSelection);
+    setIsLoading(false);
+  };
+
+  const startConvenienceFlow = async () => {
+    setIsLoading(true);
+    setChoices(prev => ({ ...prev, mode: 'convenience', ingredients: '' }));
+    const items = await fetchConvenienceTopics();
+    setConvenienceItems(items);
+    setStep(Step.ConvenienceSelection);
     setIsLoading(false);
   };
 
@@ -61,8 +72,16 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
+  const handleConvenienceSelect = (itemName: string) => {
+    setChoices(prev => ({ ...prev, ingredients: itemName }));
+    // 편의점 모드는 재료 선택 후 바로 생성 로직으로 넘어갈 수도 있지만, 
+    // 기존 플로우(환경설정 등)를 타는 것이 자연스러움.
+    // 다만 간단함을 위해 바로 Loading -> Result로 갈 수도 있음. 
+    // 여기서는 요청대로 '상세 레시피' 생성을 위해 바로 생성 함수 호출
+    startGeneration(false, itemName);
+  };
+
   const startGeneration = async (isRegen: boolean = false, overridePrompt?: string) => {
-    // 새로운 레시피 생성 전에 현재 레시피를 히스토리에 저장
     if (result) {
       setRecipeHistory(prev => [...prev, result]);
     }
@@ -70,7 +89,7 @@ const App: React.FC = () => {
     setStep(Step.Loading);
     try {
       const finalChoices = overridePrompt 
-        ? { ...choices, theme: `✨ 선택된 메뉴: ${overridePrompt}` } 
+        ? { ...choices, ingredients: overridePrompt, theme: choices.mode === 'convenience' ? '편의점 꿀조합' : choices.theme } 
         : choices;
       
       const recipe = await generateRecipe(finalChoices, isRegen);
@@ -92,7 +111,7 @@ const App: React.FC = () => {
   const handleGoBackRecipe = () => {
     if (recipeHistory.length > 0) {
       const prevRecipe = recipeHistory[recipeHistory.length - 1];
-      setRecipeHistory(prev => prev.slice(0, -1)); // 마지막 항목 제거
+      setRecipeHistory(prev => prev.slice(0, -1)); 
       setResult(prevRecipe);
     }
   };
@@ -108,9 +127,17 @@ const App: React.FC = () => {
 
     switch (step) {
       case Step.Welcome: return <WelcomeStep onNext={() => setStep(Step.ModeSelection)} />;
-      case Step.ModeSelection: return <ModeSelectionStep onFridge={startFridgeFlow} onSeasonal={startSeasonalFlow} onBack={() => setStep(Step.Welcome)} />;
+      case Step.ModeSelection: return (
+        <ModeSelectionStep 
+          onFridge={startFridgeFlow} 
+          onSeasonal={startSeasonalFlow} 
+          onConvenience={startConvenienceFlow} 
+          onBack={() => setStep(Step.Welcome)} 
+        />
+      );
       case Step.Ingredients: return <IngredientsStep choices={choices} setChoices={setChoices} onNext={() => setStep(Step.CuisineSelection)} onBack={() => setStep(Step.ModeSelection)} />;
       case Step.SeasonalSelection: return <SeasonalStep choices={choices} setChoices={setChoices} items={seasonalItems} onNext={() => setStep(Step.CuisineSelection)} onBack={() => setStep(Step.ModeSelection)} onMore={loadMoreSeasonal} />;
+      case Step.ConvenienceSelection: return <ConvenienceStep items={convenienceItems} onSelect={handleConvenienceSelect} onBack={() => setStep(Step.ModeSelection)} />;
       case Step.CuisineSelection: return <CuisineStep choices={choices} setChoices={setChoices} onNext={handleIngredientsComplete} onBack={() => choices.mode === 'fridge' ? setStep(Step.Ingredients) : setStep(Step.SeasonalSelection)} />;
       case Step.Suggestions: return <SuggestionStep choices={choices} setChoices={setChoices} suggestions={suggestions} onNext={() => setStep(Step.Preferences)} onBack={() => setStep(Step.CuisineSelection)} />;
       case Step.Preferences: return <PreferencesStep choices={choices} setChoices={setChoices} onNext={() => setStep(Step.Environment)} onBack={() => setStep(Step.Suggestions)} />;

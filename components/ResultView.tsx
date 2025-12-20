@@ -18,7 +18,7 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
     <div className="animate-fadeIn space-y-8 pb-20 pt-10">
       <div className="text-center space-y-6">
         <div className="inline-block px-4 py-1.5 bg-orange-50 text-[#ff5d01] text-xs font-black rounded-full uppercase tracking-widest">
-          Fusion Master Recipe
+          Recipe Completed
         </div>
         
         {result.imageUrl && (
@@ -44,6 +44,19 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
         </div>
       </div>
 
+      {/* 재료 목록 섹션 추가 */}
+      {result.ingredientsList && (
+        <div className="bg-white rounded-[24px] p-6 shadow-sm border border-slate-50">
+          <h3 className="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+            <span className="text-xl">🛒</span> 필요 재료
+          </h3>
+          <div 
+            className="prose prose-sm prose-slate max-w-none text-slate-600 font-medium ingredients-list"
+            dangerouslySetInnerHTML={{ __html: result.ingredientsList }}
+          />
+        </div>
+      )}
+
       <div className="bg-[#F2F4F6] p-1.5 rounded-2xl flex sticky top-4 z-30">
         <button
           onClick={() => setTab('easy')}
@@ -59,7 +72,7 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
             tab === 'gourmet' ? 'bg-white text-[#ff5d01] shadow-sm' : 'text-slate-500'
           }`}
         >
-          ✨ 셰프의 킥
+          ✨ 꿀팁 & 킥
         </button>
       </div>
 
@@ -72,7 +85,7 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-black text-slate-900">다른 퓨전 아이디어</h3>
+        <h3 className="text-lg font-black text-slate-900">다른 추천 메뉴</h3>
         <div className="grid gap-3">
           {result.similarRecipes.map((recipe, idx) => (
             <div key={idx} className="bg-orange-50/30 p-6 rounded-3xl border border-orange-100 flex flex-col gap-3">
@@ -93,7 +106,7 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
 
       {result.referenceLinks && result.referenceLinks.length > 0 && (
         <div className="space-y-4 pt-4">
-          <h3 className="text-lg font-black text-slate-900">유사한 음식 레시피 링크</h3>
+          <h3 className="text-lg font-black text-slate-900">참고 링크</h3>
           <div className="flex flex-col gap-2">
             {result.referenceLinks.map((link, idx) => (
               <a 
@@ -145,6 +158,9 @@ const ResultView: React.FC<Props> = ({ result, canGoBack, onReset, onRegenerate,
           display: flex; align-items: center; justify-content: center;
           border-radius: 12px; font-weight: 900; font-size: 0.9rem;
         }
+        .ingredients-list ul { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+        .ingredients-list li { display: flex; align-items: center; gap: 0.5rem; background: #f8fafc; padding: 0.5rem 0.75rem; border-radius: 8px; font-size: 0.9rem; }
+        .ingredients-list li::before { content: '•'; color: #ff5d01; font-weight: bold; }
       `}</style>
     </div>
   );

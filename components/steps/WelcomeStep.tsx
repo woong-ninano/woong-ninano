@@ -43,7 +43,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               onClick={() => setShowUpdateModal(true)}
               className="text-[10px] text-slate-300 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-200 underline-offset-2"
             >
-              v1.1.1
+              v1.2.1
             </button>
           </div>
         </div>
@@ -63,15 +63,17 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               <div className="flex items-center gap-3">
                 <span className="bg-orange-100 text-[#ff5d01] text-xs font-black px-2 py-1 rounded-md">NEW</span>
                 <h3 className="text-xl font-black text-slate-900">
-                  v1.1.1 업데이트 노트
+                  v1.2.1 업데이트 노트
                 </h3>
               </div>
               
               <ul className="space-y-4">
                 {[
-                  "📸 요리 이미지를 추가했습니다.",
-                  "🔄 같은 재료 다른 레시피 추천하기 기능이 추가되었습니다.",
-                  "⬅️ 이전 레시피 다시보기 기능이 추가되었습니다."
+                  "🏪 자취생/편의점 꿀조합 요리 모드 추가!",
+                  "🛒 레시피 결과에 '필요 재료 목록' 추가",
+                  "📸 요리 이미지 생성 기능 고도화",
+                  "🔄 같은 재료 다른 레시피 추천 기능",
+                  "⬅️ 이전 레시피 다시보기 기능"
                 ].map((note, i) => (
                   <li key={i} className="flex items-start gap-3 text-slate-600 font-medium leading-relaxed">
                     <span className="text-[#ff5d01] mt-1.5 w-1.5 h-1.5 rounded-full bg-[#ff5d01] block flex-shrink-0"></span>
