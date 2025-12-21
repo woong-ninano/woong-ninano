@@ -10,9 +10,19 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   const updateHistory = [
     {
-      version: "v1.2.6",
+      version: "v1.2.7",
       tag: "NEW",
-      date: "2024.05.23",
+      date: "2025.12.21",
+      changes: [
+        "🏪 편의점 모드: '간식/디저트' 전용 추천 옵션 추가",
+        "🔄 결과 화면: '다른 추천 메뉴' 클릭 시 해당 레시피 바로 생성",
+        "🔗 참고 링크 클릭 이동 지원 및 중복 UI 제거",
+        "🦶 하단 푸터 'Powered by 웅이 연구소' 브랜딩 적용"
+      ]
+    },
+    {
+      version: "v1.2.6",
+      date: "2025.12.21",
       changes: [
         "⭐ 레시피 별점 및 후기(성공/실패) 기능 추가 (Beta)",
         "📊 인기 레시피 확인을 위한 다운로드 집계 시스템 적용",
@@ -21,7 +31,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
     },
     {
       version: "v1.2.5",
-      date: "2024.05.22",
+      date: "2025.12.20",
       changes: [
         "📄 레시피 PDF 저장 기능 추가",
         "🎨 레시피 결과 화면 UI/UX 개선"
@@ -29,7 +39,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
     },
     {
       version: "v1.2.4",
-      date: "2024.05.21",
+      date: "2025.12.20",
       changes: [
         "🔍 편의점 메뉴 목록 '더 보기' 기능 개선 (목록 유지)",
         "🛒 결과 화면 재료 목록 가독성 개선 (1열 레이아웃)",
@@ -38,7 +48,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
     },
     {
       version: "v1.2.3",
-      date: "2024.05.15",
+      date: "2025.12.20",
       changes: [
         "➡️ 레시피 히스토리 탐색 기능 (이전/다음 레시피 보기)",
         "📱 결과 화면에 '필요 재료 체크리스트' 추가",
@@ -48,7 +58,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
     {
       version: "v1.2.0",
       tag: "Major",
-      date: "2024.05.01",
+      date: "2025.12.19",
       changes: [
         "🏪 대규모 업데이트: '편의점 꿀조합' 모드 오픈!",
         "📸 AI 요리 이미지 생성 기능 추가 (Beta)",
@@ -57,7 +67,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
     },
     {
       version: "v1.1.5",
-      date: "2024.04.20",
+      date: "2025.12.19",
       changes: [
         "💡 '비슷한 추천 메뉴' 제안 기능 추가",
         "⚡️ 간편 레시피 vs 셰프의 킥(고급) 레시피 탭 분리",
@@ -66,7 +76,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
     },
     {
       version: "v1.1.0",
-      date: "2024.04.05",
+      date: "2025.12.19",
       changes: [
         "🌿 '제철 식재료' 추천 모드 추가",
         "🧂 어울리는 양념 및 부재료 자동 추천 기능",
@@ -76,7 +86,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
     {
       version: "v1.0.0",
       tag: "Launch",
-      date: "2024.03.15",
+      date: "2025.12.18",
       changes: [
         "🎉 '오늘 뭐 해먹지?' 서비스 정식 런칭",
         "🧊 냉장고 파먹기(재료 기반 추천) 핵심 기능 탑재",
@@ -120,7 +130,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               onClick={() => setShowUpdateModal(true)}
               className="text-[10px] text-slate-300 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-200 underline-offset-2"
             >
-              v1.2.6 Update Note
+              v1.2.7 Update Note
             </button>
           </div>
         </div>
