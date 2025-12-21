@@ -10,8 +10,16 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   const updateHistory = [
     {
-      version: "v1.2.4",
+      version: "v1.2.5",
       tag: "NEW",
+      date: "2024.05.22",
+      changes: [
+        "📄 레시피 PDF 저장 기능 추가",
+        "🎨 레시피 결과 화면 UI/UX 개선"
+      ]
+    },
+    {
+      version: "v1.2.4",
       date: "2024.05.21",
       changes: [
         "🔍 편의점 메뉴 목록 '더 보기' 기능 개선 (목록 유지)",
@@ -103,7 +111,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               onClick={() => setShowUpdateModal(true)}
               className="text-[10px] text-slate-300 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-200 underline-offset-2"
             >
-              v1.2.4 Update Note
+              v1.2.5 Update Note
             </button>
           </div>
         </div>
