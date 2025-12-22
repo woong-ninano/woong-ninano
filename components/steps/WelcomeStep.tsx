@@ -128,7 +128,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   return (
     <>
-      <div className="flex flex-col items-center justify-between h-full py-12 animate-fadeIn relative z-10">
+      <div className="flex flex-col items-center justify-between h-full py-12 px-6 animate-fadeIn relative z-10">
         <div className="flex-1 flex flex-col items-center justify-center space-y-10 w-full">
           <div className="relative">
             <div className="w-40 h-40 bg-[#FFF3ED] rounded-[40px] absolute -z-10 rotate-6 scale-110"></div>

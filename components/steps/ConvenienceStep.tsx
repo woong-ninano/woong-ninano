@@ -17,7 +17,7 @@ interface Props {
 
 const ConvenienceStep: React.FC<Props> = ({ items, onSelect, onLoadMore, onLoadSnack, onBack }) => {
   return (
-    <div className="space-y-6 pt-12 step-transition pb-20">
+    <div className="space-y-6 pt-12 px-6 step-transition pb-20">
       <div className="space-y-2">
         <h2 className="text-3xl font-black text-slate-900 leading-tight">
           오늘은 편의점을<br/><span className="brand-orange-text">털어볼까요?</span>

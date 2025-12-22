@@ -10,7 +10,7 @@ interface Props {
 
 const ModeSelectionStep: React.FC<Props> = ({ onFridge, onSeasonal, onConvenience, onBack }) => {
   return (
-    <div className="space-y-6 pt-10 step-transition overflow-y-auto pb-10">
+    <div className="space-y-6 pt-10 px-6 step-transition overflow-y-auto pb-10">
       <div className="space-y-2">
         <h2 className="text-2xl font-black text-slate-900">어떻게 시작할까요?</h2>
         <p className="text-slate-500 font-medium">원하시는 추천 방식을 선택해 주세요.</p>

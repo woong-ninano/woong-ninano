@@ -11,7 +11,7 @@ interface Props {
 
 const IngredientsStep: React.FC<Props> = ({ choices, setChoices, onNext, onBack }) => {
   return (
-    <div className="space-y-10 step-transition h-full flex flex-col pt-12">
+    <div className="space-y-10 step-transition h-full flex flex-col pt-12 px-6">
       <div className="space-y-6 flex-1">
         <div className="space-y-2">
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">

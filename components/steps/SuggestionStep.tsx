@@ -37,7 +37,7 @@ const SuggestionStep: React.FC<Props> = ({ choices, setChoices, suggestions, onN
   };
 
   return (
-    <div className="space-y-10 step-transition pb-10 pt-12">
+    <div className="space-y-10 step-transition pb-10 pt-12 px-6">
       <div className="space-y-2">
         <h2 className="text-3xl font-black text-slate-900 leading-tight">
           맛을 더해줄<br/><span className="brand-orange-text">마법의 한 끗</span>

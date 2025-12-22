@@ -24,7 +24,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
 
   useEffect(() => {
     loadRecipes();
-  }, [sortBy]); // Sort 변경 시 자동 로드
+  }, [sortBy]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,7 +37,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
   };
 
   return (
-    <div className="pt-8 pb-24 px-6 h-full flex flex-col animate-fadeIn">
+    <div className="pt-8 px-6 animate-fadeIn">
       {/* Header Area with Login */}
       <div className="flex justify-between items-start mb-6">
         <div className="space-y-2">
@@ -121,7 +121,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
       </div>
 
       {/* List */}
-      <div className="flex-1 overflow-y-auto custom-scrollbar space-y-4 pr-1">
+      <div className="space-y-4">
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="w-8 h-8 border-4 border-orange-100 border-t-[#ff5d01] rounded-full animate-spin"></div>
@@ -176,12 +176,6 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
           ))
         )}
       </div>
-
-      <style>{`
-        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background-color: #f1f5f9; border-radius: 20px; }
-      `}</style>
     </div>
   );
 };

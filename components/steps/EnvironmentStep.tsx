@@ -13,7 +13,7 @@ const LEVELS = ['Lv.1 요린이', 'Lv.2 평범한 주부', 'Lv.3 주방의 고�
 
 const EnvironmentStep: React.FC<Props> = ({ choices, setChoices, onGenerate, onBack }) => {
   return (
-    <div className="space-y-12 step-transition pt-12 pb-10">
+    <div className="space-y-12 step-transition pt-12 pb-10 px-6">
       <section className="space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-black text-slate-900">거의 다 됐어요!</h2>

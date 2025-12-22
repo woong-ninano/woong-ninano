@@ -29,7 +29,7 @@ const SeasonalStep: React.FC<Props> = ({ choices, setChoices, items, onNext, onB
   };
 
   return (
-    <div className="space-y-8 pt-12 step-transition">
+    <div className="space-y-8 pt-12 px-6 step-transition">
       <div className="space-y-2">
         <h2 className="text-3xl font-black text-slate-900 leading-tight">
           장바구니에<br/><span className="brand-orange-text">담아볼까요?</span>

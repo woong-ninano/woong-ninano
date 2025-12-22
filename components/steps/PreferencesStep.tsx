@@ -15,7 +15,7 @@ const THEMES = ['🍺 안주', '💪 건강식', '🌿 다이어트', '🍚 든�
 
 const PreferencesStep: React.FC<Props> = ({ choices, setChoices, onNext, onBack }) => {
   return (
-    <div className="space-y-12 step-transition py-12">
+    <div className="space-y-12 step-transition py-12 px-6">
       <section className="space-y-6">
         <h2 className="text-3xl font-black text-slate-900 leading-tight">누구와 함께 드시나요?</h2>
         <div className="grid grid-cols-2 gap-3">

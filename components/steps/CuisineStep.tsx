@@ -22,7 +22,7 @@ const CUISINES = [
 
 const CuisineStep: React.FC<Props> = ({ choices, setChoices, onNext, onBack }) => {
   return (
-    <div className="space-y-8 pt-12 step-transition">
+    <div className="space-y-8 pt-12 px-6 step-transition">
       <div className="space-y-2">
         <h2 className="text-2xl font-black text-slate-900">어떤 스타일을 선호하세요?</h2>
         <p className="text-slate-500 font-medium">좋아하는 요리 스타일을 알려주세요.</p>
