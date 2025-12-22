@@ -239,16 +239,29 @@ const ResultView: React.FC<Props> = ({
       )}
 
       {/* Login Status Bar */}
-      <div className="flex justify-between items-center px-2">
+      <div className="flex justify-between items-center px-4 py-2 relative z-10">
         {user ? (
           <div className="text-xs text-slate-500 font-bold flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-green-500"></span>
             {user.email?.split('@')[0]}님 환영합니다
-            <button onClick={signOut} className="text-slate-400 underline ml-2">로그아웃</button>
+            <button 
+                onClick={signOut} 
+                className="text-slate-400 underline ml-2 py-2 px-2 hover:text-slate-600 transition-colors cursor-pointer"
+            >
+                로그아웃
+            </button>
           </div>
         ) : (
-          <div className="text-xs text-slate-400 font-bold">
-            로그인하고 커뮤니티에 참여해보세요!
+          <div className="flex items-center justify-between w-full">
+            <span className="text-xs text-slate-400 font-bold">
+                로그인하고 커뮤니티에 참여해보세요!
+            </span>
+            <button
+                onClick={handleLogin}
+                className="text-xs bg-white border border-slate-200 px-3 py-1.5 rounded-full font-bold text-slate-600 shadow-sm hover:text-[#ff5d01] hover:border-[#ff5d01] transition-all active:scale-95 cursor-pointer"
+            >
+                🔑 로그인
+            </button>
           </div>
         )}
       </div>
