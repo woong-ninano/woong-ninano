@@ -13,6 +13,7 @@ import EnvironmentStep from './components/steps/EnvironmentStep.tsx';
 import LoadingStep from './components/steps/LoadingStep.tsx';
 import ResultView from './components/ResultView.tsx';
 import { generateRecipe, fetchSuggestions, fetchSeasonalIngredients, fetchConvenienceTopics, generateDishImage } from './services/gemini.ts';
+import { saveRecipeToDB } from './services/supabase.ts';
 
 const App: React.FC = () => {
   const [step, setStep] = useState<Step>(Step.Welcome);
@@ -117,7 +118,19 @@ const App: React.FC = () => {
         imageUrl = await generateDishImage(recipe.dishName);
       }
 
-      const newResult = { ...recipe, imageUrl };
+      // Supabase DB에 저장 (비동기 처리하지만 UI를 막지 않음)
+      let dbId: number | undefined = undefined;
+      try {
+        const savedData = await saveRecipeToDB({ ...recipe, imageUrl });
+        if (savedData) {
+          dbId = savedData.id;
+          console.log("Recipe saved to DB with ID:", dbId);
+        }
+      } catch (dbError) {
+        console.error("Failed to save to DB:", dbError);
+      }
+
+      const newResult = { ...recipe, imageUrl, id: dbId };
 
       // 새로운 레시피 생성 시, 현재 인덱스 이후의 기록(미래)은 날리고 새로운 것을 추가
       setRecipeHistory(prev => {

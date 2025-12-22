@@ -21,6 +21,7 @@ export interface ReferenceLink {
 }
 
 export interface RecipeResult {
+  id?: number; // Supabase DB ID (Optional)
   dishName: string;
   comment: string;
   ingredientsList: string; // HTML format <ul><li>
