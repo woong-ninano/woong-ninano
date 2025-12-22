@@ -17,7 +17,7 @@ const EnvironmentStep: React.FC<Props> = ({ choices, setChoices, onGenerate, onB
       <section className="space-y-6">
         <div className="space-y-2">
           <h2 className="text-3xl font-black text-slate-900">거의 다 됐어요!</h2>
-          <p className="text-slate-400 font-bold text-lg">요리 실력에 맞춰 설명해 드릴게요.</p>
+          <p className="text-slate-600 font-bold text-lg">요리 실력에 맞춰 설명해 드릴게요.</p>
         </div>
         
         <div className="space-y-3">
@@ -28,7 +28,7 @@ const EnvironmentStep: React.FC<Props> = ({ choices, setChoices, onGenerate, onB
               className={`w-full p-6 rounded-3xl text-left font-bold transition-all border-2 ${
                 choices.level === lv
                   ? 'border-[#ff5d01] bg-orange-50 text-[#ff5d01] shadow-md'
-                  : 'border-slate-100 bg-white text-slate-500'
+                  : 'border-slate-100 bg-white text-slate-500 hover:border-slate-300'
               }`}
             >
               {lv}
@@ -44,7 +44,7 @@ const EnvironmentStep: React.FC<Props> = ({ choices, setChoices, onGenerate, onB
         >
           ✨ 레시피 완성하기
         </button>
-        <button onClick={onBack} className="w-full py-2 text-slate-300 font-bold">
+        <button onClick={onBack} className="w-full py-2 text-slate-400 font-bold hover:text-slate-600 transition-colors">
           이전으로
         </button>
       </div>

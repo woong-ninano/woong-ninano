@@ -284,34 +284,48 @@ const App: React.FC = () => {
       <div className="w-full max-w-lg bg-white min-h-dvh flex flex-col relative toss-card overflow-hidden">
         
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto pb-28">
+        <main className="flex-1 overflow-y-auto pb-32 custom-scrollbar">
           {renderContent()}
         </main>
 
         {/* Bottom Navigation */}
-        <nav className="h-[70px] bg-white border-t border-slate-100 flex items-center justify-around fixed bottom-0 w-full max-w-lg z-50 shadow-[0_-5px_15px_rgba(0,0,0,0.02)]">
+        <nav className="h-[86px] bg-white border-t border-slate-100 flex items-center justify-around fixed bottom-0 w-full max-w-lg z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.03)] pb-2 rounded-t-[20px]">
           <button 
             onClick={() => setActiveTab('home')}
-            className={`flex flex-col items-center gap-1 w-full h-full justify-center transition-colors ${activeTab === 'home' ? 'text-[#ff5d01]' : 'text-slate-300'}`}
+            className={`flex flex-col items-center gap-1.5 w-full h-full justify-center transition-all group ${activeTab === 'home' ? 'text-[#ff5d01]' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            <span className="text-2xl">🍳</span>
-            <span className="text-[10px] font-bold">레시피 생성</span>
+            {/* Minimal Chef Hat Icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-300 ${activeTab === 'home' ? 'scale-110' : 'group-hover:scale-105'}`}>
+              <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"/>
+              <line x1="6" y1="17" x2="18" y2="17"/>
+            </svg>
+            <span className="text-[11px] font-bold tracking-tight">레시피 생성</span>
           </button>
           
-          <div className="w-[1px] h-6 bg-slate-100"></div>
-
           <button 
             onClick={() => {
               setActiveTab('community');
-              setStep(Step.Community); // 탭 전환 시 스텝 변경 (렌더링 트리거)
+              setStep(Step.Community); 
             }}
-            className={`flex flex-col items-center gap-1 w-full h-full justify-center transition-colors ${activeTab === 'community' ? 'text-[#ff5d01]' : 'text-slate-300'}`}
+            className={`flex flex-col items-center gap-1.5 w-full h-full justify-center transition-all group ${activeTab === 'community' ? 'text-[#ff5d01]' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            <span className="text-2xl">👥</span>
-            <span className="text-[10px] font-bold">커뮤니티</span>
+            {/* Minimal Users Icon */}
+            <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`transition-transform duration-300 ${activeTab === 'community' ? 'scale-110' : 'group-hover:scale-105'}`}>
+              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <span className="text-[11px] font-bold tracking-tight">커뮤니티</span>
           </button>
         </nav>
       </div>
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 0px;
+          background: transparent;
+        }
+      `}</style>
     </div>
   );
 };

@@ -25,7 +25,7 @@ const CuisineStep: React.FC<Props> = ({ choices, setChoices, onNext, onBack }) =
     <div className="space-y-8 pt-12 px-6 step-transition">
       <div className="space-y-2">
         <h2 className="text-2xl font-black text-slate-900">어떤 스타일을 선호하세요?</h2>
-        <p className="text-slate-500 font-medium">좋아하는 요리 스타일을 알려주세요.</p>
+        <p className="text-slate-600 font-bold">좋아하는 요리 스타일을 알려주세요.</p>
       </div>
 
       <div className="grid grid-cols-2 gap-3">
@@ -48,11 +48,11 @@ const CuisineStep: React.FC<Props> = ({ choices, setChoices, onNext, onBack }) =
       <div className="pt-6 space-y-4">
         <button
           onClick={onNext}
-          className="w-full py-5 bg-[#ff5d01] text-white text-lg font-bold rounded-2xl shadow-lg"
+          className="w-full py-5 bg-[#ff5d01] text-white text-lg font-bold rounded-2xl shadow-lg hover:bg-[#e04d01] transition-all"
         >
           다음으로
         </button>
-        <button onClick={onBack} className="w-full py-2 text-slate-400 font-bold">이전으로</button>
+        <button onClick={onBack} className="w-full py-2 text-slate-400 font-bold hover:text-slate-600 transition-colors">이전으로</button>
       </div>
     </div>
   );

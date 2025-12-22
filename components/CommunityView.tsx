@@ -44,7 +44,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
             <h2 className="text-3xl font-black text-slate-900">
             모두의 <span className="brand-orange-text">레시피</span>
             </h2>
-            <p className="text-slate-500 font-medium text-sm">
+            <p className="text-slate-600 font-bold text-sm">
             다른 사람들의 맛있는 식탁을 엿보세요.
             </p>
         </div>
@@ -52,12 +52,12 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
         <div className="pt-1">
             {user ? (
                 <div className="flex flex-col items-end gap-1">
-                    <span className="text-[10px] font-bold text-slate-400 bg-slate-100 px-2 py-1 rounded-full border border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full border border-slate-200">
                         {user.email?.split('@')[0]}님
                     </span>
                     <button 
                         onClick={signOut}
-                        className="text-[10px] text-slate-300 underline hover:text-slate-500 transition-colors"
+                        className="text-[10px] text-slate-400 underline hover:text-slate-600 transition-colors"
                     >
                         로그아웃
                     </button>
@@ -81,7 +81,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="요리 이름 검색..."
-            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#ff5d01] transition-colors"
+            className="w-full pl-12 pr-4 py-3 bg-white border border-slate-200 rounded-2xl text-slate-800 placeholder:text-slate-400 focus:outline-none focus:border-[#ff5d01] transition-colors font-medium"
           />
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xl">🔍</span>
           <button 
@@ -96,7 +96,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
           <button
             onClick={() => setSortBy('latest')}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-              sortBy === 'latest' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400'
+              sortBy === 'latest' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-400 hover:text-slate-500'
             }`}
           >
             최신순
@@ -104,7 +104,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
           <button
             onClick={() => setSortBy('popular')}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-              sortBy === 'popular' ? 'bg-white text-[#ff5d01] shadow-sm' : 'text-slate-400'
+              sortBy === 'popular' ? 'bg-white text-[#ff5d01] shadow-sm' : 'text-slate-400 hover:text-slate-500'
             }`}
           >
             인기순 (저장)
@@ -112,7 +112,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
           <button
             onClick={() => setSortBy('rating')}
             className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
-              sortBy === 'rating' ? 'bg-white text-yellow-500 shadow-sm' : 'text-slate-400'
+              sortBy === 'rating' ? 'bg-white text-yellow-500 shadow-sm' : 'text-slate-400 hover:text-slate-500'
             }`}
           >
             별점순
@@ -121,13 +121,13 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
       </div>
 
       {/* List */}
-      <div className="space-y-4">
+      <div className="space-y-4 pb-4">
         {loading ? (
           <div className="flex justify-center items-center py-20">
             <div className="w-8 h-8 border-4 border-orange-100 border-t-[#ff5d01] rounded-full animate-spin"></div>
           </div>
         ) : recipes.length === 0 ? (
-          <div className="text-center py-20 text-slate-400 text-sm">
+          <div className="text-center py-20 text-slate-400 text-sm font-medium">
             검색 결과가 없습니다.<br/>직접 첫 번째 레시피를 만들어보세요!
           </div>
         ) : (
@@ -154,19 +154,19 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
                     <h3 className="text-base font-bold text-slate-900 truncate pr-2">
                       {recipe.dishName}
                     </h3>
-                    <p className="text-xs text-slate-500 line-clamp-1 mt-0.5">
+                    <p className="text-xs text-slate-500 line-clamp-1 mt-0.5 font-medium">
                       "{recipe.comment}"
                     </p>
                   </div>
                   
-                  <div className="flex items-center gap-3 text-xs font-medium text-slate-400">
+                  <div className="flex items-center gap-3 text-xs font-bold text-slate-400">
                     <span className="flex items-center gap-1 text-yellow-500">
                       ⭐ {getStarAverage(recipe.rating_sum, recipe.rating_count)}
                     </span>
                     <span className="flex items-center gap-1">
                       📄 {recipe.download_count || 0} 저장
                     </span>
-                    <span className="ml-auto text-[10px] bg-slate-50 px-1.5 py-0.5 rounded text-slate-300">
+                    <span className="ml-auto text-[10px] bg-slate-50 px-1.5 py-0.5 rounded text-slate-300 font-medium">
                       {new Date(recipe.created_at || '').toLocaleDateString().slice(2)}
                     </span>
                   </div>

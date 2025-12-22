@@ -17,7 +17,7 @@ const IngredientsStep: React.FC<Props> = ({ choices, setChoices, onNext, onBack 
           <h2 className="text-3xl font-black text-slate-900 tracking-tight">
             지금 냉장고에<br/><span className="brand-orange-text">무엇이 있나요?</span>
           </h2>
-          <p className="text-slate-400 font-bold text-lg">주재료를 적거나, 하고 싶은 요리를 자유롭게 적어주세요.</p>
+          <p className="text-slate-600 font-bold text-lg">주재료를 적거나, 하고 싶은 요리를 자유롭게 적어주세요.</p>
         </div>
         
         <div className="group relative">
@@ -26,7 +26,7 @@ const IngredientsStep: React.FC<Props> = ({ choices, setChoices, onNext, onBack 
             value={choices.ingredients}
             onChange={(e) => setChoices(prev => ({ ...prev, ingredients: e.target.value }))}
             placeholder="예: 삼겹살, 김치, 계란..."
-            className="w-full p-8 bg-white border border-slate-100 rounded-[32px] text-xl font-bold placeholder:text-slate-200 focus:border-[#ff5d01] focus:ring-4 focus:ring-orange-50 focus:outline-none transition-all shadow-sm group-hover:shadow-md"
+            className="w-full p-8 bg-white border border-slate-100 rounded-[32px] text-xl font-bold placeholder:text-slate-300 focus:border-[#ff5d01] focus:ring-4 focus:ring-orange-50 focus:outline-none transition-all shadow-sm group-hover:shadow-md text-slate-800"
           />
         </div>
       </div>
@@ -39,7 +39,7 @@ const IngredientsStep: React.FC<Props> = ({ choices, setChoices, onNext, onBack 
         >
           다음으로
         </button>
-        <button onClick={onBack} className="w-full py-3 text-slate-400 text-lg font-bold hover:text-slate-600">
+        <button onClick={onBack} className="w-full py-3 text-slate-400 text-lg font-bold hover:text-slate-600 transition-colors">
           뒤로 가기
         </button>
       </div>

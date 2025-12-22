@@ -42,7 +42,7 @@ const SuggestionStep: React.FC<Props> = ({ choices, setChoices, suggestions, onN
         <h2 className="text-3xl font-black text-slate-900 leading-tight">
           맛을 더해줄<br/><span className="brand-orange-text">마법의 한 끗</span>
         </h2>
-        <p className="text-slate-500 font-medium">추천 재료를 클릭해 추가해보세요.</p>
+        <p className="text-slate-600 font-bold">추천 재료를 클릭해 추가해보세요.</p>
       </div>
 
       <section className="space-y-4">
@@ -84,7 +84,7 @@ const SuggestionStep: React.FC<Props> = ({ choices, setChoices, suggestions, onN
         >
           선택 완료
         </button>
-        <button onClick={onBack} className="w-full py-3 text-slate-400 font-bold">
+        <button onClick={onBack} className="w-full py-3 text-slate-400 font-bold hover:text-slate-600 transition-colors">
           이전 단계로
         </button>
       </div>

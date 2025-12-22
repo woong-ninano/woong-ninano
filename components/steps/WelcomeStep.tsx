@@ -10,6 +10,17 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   const updateHistory = [
     {
+      version: "v1.5.0",
+      tag: "System",
+      date: "2025.12.25",
+      changes: [
+        "☁️ Vercel 배포 환경 완벽 대응 (환경변수 로직 개선)",
+        "🗄️ Supabase 데이터베이스 테이블 스키마 최신화",
+        "🔧 로그인 및 DB 연결 안정성 강화",
+        "🐛 기타 버그 수정 및 성능 최적화"
+      ]
+    },
+    {
       version: "v1.4.0",
       tag: "Feature",
       date: "2025.12.24",
@@ -140,7 +151,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
             <h1 className="text-3xl font-black text-slate-900 tracking-tight leading-snug">
               웅아!<br/><span className="brand-orange-text">오늘 뭐 해먹지?</span>
             </h1>
-            <p className="text-slate-500 text-lg font-medium leading-relaxed">
+            <p className="text-slate-600 font-bold text-lg leading-relaxed">
               세상의 모든 재료를 조합하여<br/>당신만을 위한 퓨전 미식을 제안합니다.
             </p>
           </div>
@@ -153,15 +164,15 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
           >
             메뉴 추천 받기
           </button>
-          <div className="text-center space-y-1">
-            <p className="text-[11px] text-slate-300 font-bold tracking-[0.2em] uppercase">
+          <div className="text-center space-y-2">
+            <p className="text-[11px] text-slate-400 font-bold tracking-[0.2em] uppercase">
               AI Global Fusion Recipe Service
             </p>
             <button 
               onClick={() => setShowUpdateModal(true)}
-              className="text-[10px] text-slate-300 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-200 underline-offset-2"
+              className="text-xs text-slate-500 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-300 underline-offset-4 decoration-2"
             >
-              v1.4.0 Update Note
+              v1.5.0 Update Note
             </button>
           </div>
         </div>
@@ -210,6 +221,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
                           update.tag === 'NEW' || update.tag === 'Speed' ? 'bg-orange-100 text-[#ff5d01]' : 
                           update.tag === 'Major' ? 'bg-purple-100 text-purple-600' :
                           update.tag === 'Feature' ? 'bg-blue-100 text-blue-600' :
+                          update.tag === 'System' ? 'bg-slate-200 text-slate-700' :
                           'bg-slate-100 text-slate-500'
                         }`}>
                           {update.tag}

@@ -22,7 +22,7 @@ const ConvenienceStep: React.FC<Props> = ({ items, onSelect, onLoadMore, onLoadS
         <h2 className="text-3xl font-black text-slate-900 leading-tight">
           오늘은 편의점을<br/><span className="brand-orange-text">털어볼까요?</span>
         </h2>
-        <p className="text-slate-500 font-medium">원하는 메뉴를 선택하면 조리법을 알려드려요.</p>
+        <p className="text-slate-600 font-bold text-lg">원하는 메뉴를 선택하면 조리법을 알려드려요.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
@@ -53,7 +53,7 @@ const ConvenienceStep: React.FC<Props> = ({ items, onSelect, onLoadMore, onLoadS
             </button>
         </div>
         
-        <button onClick={onBack} className="w-full py-2 text-slate-400 font-bold mt-2">이전 화면으로</button>
+        <button onClick={onBack} className="w-full py-2 text-slate-400 font-bold mt-2 hover:text-slate-600 transition-colors">이전 화면으로</button>
       </div>
     </div>
   );

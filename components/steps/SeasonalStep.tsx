@@ -34,7 +34,7 @@ const SeasonalStep: React.FC<Props> = ({ choices, setChoices, items, onNext, onB
         <h2 className="text-3xl font-black text-slate-900 leading-tight">
           장바구니에<br/><span className="brand-orange-text">담아볼까요?</span>
         </h2>
-        <p className="text-slate-500 font-medium">지금 시즌에 가장 좋은 재료들이에요.</p>
+        <p className="text-slate-600 font-bold text-lg">지금 시즌에 가장 좋은 재료들이에요.</p>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
@@ -63,7 +63,7 @@ const SeasonalStep: React.FC<Props> = ({ choices, setChoices, items, onNext, onB
         >
           재료 선택 완료
         </button>
-        <button onClick={onBack} className="w-full py-2 text-slate-400 font-bold">이전으로</button>
+        <button onClick={onBack} className="w-full py-2 text-slate-400 font-bold hover:text-slate-600 transition-colors">이전으로</button>
       </div>
     </div>
   );
