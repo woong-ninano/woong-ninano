@@ -10,6 +10,15 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   const updateHistory = [
     {
+      version: "v1.2.8",
+      tag: "Speed",
+      date: "2025.12.22",
+      changes: [
+        "⚡️ 레시피 생성 속도 대폭 개선 (Gemini 3 Flash 모델 적용)",
+        "🚀 편의점/제철 요리 추천 반응 속도 최적화"
+      ]
+    },
+    {
       version: "v1.2.7",
       tag: "NEW",
       date: "2025.12.21",
@@ -130,7 +139,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               onClick={() => setShowUpdateModal(true)}
               className="text-[10px] text-slate-300 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-200 underline-offset-2"
             >
-              v1.2.7 Update Note
+              v1.2.8 Update Note
             </button>
           </div>
         </div>
@@ -176,7 +185,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
                       </span>
                       {update.tag && (
                         <span className={`text-[10px] font-black px-2 py-0.5 rounded-md ${
-                          update.tag === 'NEW' ? 'bg-orange-100 text-[#ff5d01]' : 
+                          update.tag === 'NEW' || update.tag === 'Speed' ? 'bg-orange-100 text-[#ff5d01]' : 
                           update.tag === 'Major' ? 'bg-purple-100 text-purple-600' :
                           'bg-slate-100 text-slate-500'
                         }`}>

@@ -206,7 +206,7 @@ export const generateRecipe = async (choices: UserChoices, isRegenerate: boolean
   `;
 
   const response = await ai.models.generateContent({
-    model: 'gemini-3-pro-preview',
+    model: 'gemini-3-flash-preview', // Speed Optimization: Switched from Pro to Flash
     contents: prompt,
     config: {
       responseMimeType: "application/json",
