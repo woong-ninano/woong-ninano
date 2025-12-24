@@ -8,21 +8,25 @@ interface Item {
 }
 
 interface Props {
+  type: 'meal' | 'snack';
   items: Item[];
   onSelect: (itemName: string) => void;
   onLoadMore: () => void;
   onLoadSnack: () => void;
+  onLoadMeal: () => void;
   onBack: () => void;
 }
 
-const ConvenienceStep: React.FC<Props> = ({ items, onSelect, onLoadMore, onLoadSnack, onBack }) => {
+const ConvenienceStep: React.FC<Props> = ({ type, items, onSelect, onLoadMore, onLoadSnack, onLoadMeal, onBack }) => {
   return (
     <div className="space-y-6 pt-12 px-6 step-transition pb-20">
       <div className="space-y-2">
         <h2 className="text-3xl font-black text-slate-900 leading-tight">
           오늘은 편의점을<br/><span className="brand-orange-text">털어볼까요?</span>
         </h2>
-        <p className="text-slate-600 font-bold text-lg">원하는 메뉴를 선택하면 조리법을 알려드려요.</p>
+        <p className="text-slate-600 font-bold text-lg">
+          {type === 'meal' ? '든든한 한 끼 식사 메뉴를 추천해드려요.' : '달콤 짭짤한 간식 조합을 추천해드려요.'}
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-3">
@@ -46,10 +50,14 @@ const ConvenienceStep: React.FC<Props> = ({ items, onSelect, onLoadMore, onLoadS
             🔍 더 보기
             </button>
             <button
-            onClick={onLoadSnack}
-            className="flex-1 py-4 bg-orange-50 border-2 border-orange-200 text-orange-600 text-base font-bold rounded-2xl shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2"
+            onClick={type === 'meal' ? onLoadSnack : onLoadMeal}
+            className={`flex-1 py-4 border-2 text-base font-bold rounded-2xl shadow-sm active:scale-95 transition-all flex items-center justify-center gap-2 ${
+              type === 'meal' 
+                ? 'bg-orange-50 border-orange-200 text-orange-600' 
+                : 'bg-green-50 border-green-200 text-green-600'
+            }`}
             >
-            🍪 간식 추천
+            {type === 'meal' ? '🍪 간식 추천' : '🍱 식사 추천'}
             </button>
         </div>
         

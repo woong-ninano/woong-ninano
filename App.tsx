@@ -127,6 +127,14 @@ const App: React.FC = () => {
     setIsLoading(false);
   };
 
+  const loadMealItems = async () => {
+    setIsLoading(true);
+    setConvenienceType('meal');
+    const items = await fetchConvenienceTopics([], 'meal');
+    setConvenienceItems(items);
+    setIsLoading(false);
+  };
+
   const loadMoreSeasonal = async () => {
     setIsLoading(true);
     const excludedNames = seasonalItems.map(i => i.name);
@@ -249,10 +257,12 @@ const App: React.FC = () => {
       case Step.SeasonalSelection: return <SeasonalStep choices={choices} setChoices={setChoices} items={seasonalItems} onNext={() => setStep(Step.CuisineSelection)} onBack={() => setStep(Step.ModeSelection)} onMore={loadMoreSeasonal} />;
       case Step.ConvenienceSelection: return (
         <ConvenienceStep 
+          type={convenienceType}
           items={convenienceItems} 
           onSelect={handleConvenienceSelect} 
           onLoadMore={loadMoreConvenienceItems}
           onLoadSnack={loadSnackItems}
+          onLoadMeal={loadMealItems}
           onBack={() => setStep(Step.ModeSelection)} 
         />
       );

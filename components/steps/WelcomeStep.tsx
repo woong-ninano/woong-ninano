@@ -10,6 +10,15 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   const updateHistory = [
     {
+      version: "v1.5.2",
+      tag: "Patch",
+      date: "2025.12.26",
+      changes: [
+        "🔄 편의점 모드: '식사' ↔ '간식' 목록 간편 전환 버튼 추가",
+        "🍱 식사 추천 목록으로 돌아가기 기능 지원"
+      ]
+    },
+    {
       version: "v1.5.1",
       tag: "Patch",
       date: "2025.12.26",
@@ -182,7 +191,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               onClick={() => setShowUpdateModal(true)}
               className="text-xs text-slate-500 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-300 underline-offset-4 decoration-2"
             >
-              v1.5.1 Update Note
+              v1.5.2 Update Note
             </button>
           </div>
         </div>
