@@ -10,6 +10,17 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   const updateHistory = [
     {
+      version: "v1.5.3",
+      tag: "Patch",
+      date: "2025.12.26",
+      changes: [
+        "🔄 커뮤니티: 실시간 데이터 동기화를 위한 '수동 새로고침' 버튼 추가",
+        "🚀 최신순 정렬 로직 보강 (동시간대 생성 데이터 정렬 정확도 개선)",
+        "🛠️ 서버 저장 안정성 강화 및 상세 에러 로깅 시스템 구축",
+        "🎨 커뮤니티 리스트 카드 레이아웃 및 로딩 애니메이션 개선"
+      ]
+    },
+    {
       version: "v1.5.2",
       tag: "Patch",
       date: "2025.12.26",
@@ -82,69 +93,6 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
       ]
     },
     {
-      version: "v1.2.6",
-      date: "2025.12.21",
-      changes: [
-        "⭐ 레시피 별점 및 후기(성공/실패) 기능 추가 (Beta)",
-        "📊 인기 레시피 확인을 위한 다운로드 집계 시스템 적용",
-        "🔥 레시피 결과 화면에 '저장 수' 뱃지 표시"
-      ]
-    },
-    {
-      version: "v1.2.5",
-      date: "2025.12.20",
-      changes: [
-        "📄 레시피 PDF 저장 기능 추가",
-        "🎨 레시피 결과 화면 UI/UX 개선"
-      ]
-    },
-    {
-      version: "v1.2.4",
-      date: "2025.12.20",
-      changes: [
-        "🔍 편의점 메뉴 목록 '더 보기' 기능 개선 (목록 유지)",
-        "🛒 결과 화면 재료 목록 가독성 개선 (1열 레이아웃)",
-        "✨ 전체적인 UI/UX 디테일 및 애니메이션 안정화"
-      ]
-    },
-    {
-      version: "v1.2.3",
-      date: "2025.12.20",
-      changes: [
-        "➡️ 레시피 히스토리 탐색 기능 (이전/다음 레시피 보기)",
-        "📱 결과 화면에 '필요 재료 체크리스트' 추가",
-        "🔄 편의점 꿀조합 추천 로직 고도화"
-      ]
-    },
-    {
-      version: "v1.2.0",
-      tag: "Major",
-      date: "2025.12.19",
-      changes: [
-        "🏪 대규모 업데이트: '편의점 꿀조합' 모드 오픈!",
-        "📸 AI 요리 이미지 생성 기능 추가 (Beta)",
-        "🔗 레시피 관련 유튜브/블로그 참고 링크 제공"
-      ]
-    },
-    {
-      version: "v1.1.5",
-      date: "2025.12.19",
-      changes: [
-        "💡 '비슷한 추천 메뉴' 제안 기능 추가",
-        "⚡️ 간편 레시피 vs 셰프의 킥(고급) 레시피 탭 분리",
-        "🥘 요리 스타일(한식, 양식, 퓨전 등) 선택지 세분화"
-      ]
-    },
-    {
-      version: "v1.1.0",
-      date: "2025.12.19",
-      changes: [
-        "🌿 '제철 식재료' 추천 모드 추가",
-        "🧂 어울리는 양념 및 부재료 자동 추천 기능",
-        "👥 식사 인원(혼밥, 가족 등) 및 분위기 설정 옵션 추가"
-      ]
-    },
-    {
       version: "v1.0.0",
       tag: "Launch",
       date: "2025.12.18",
@@ -191,7 +139,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               onClick={() => setShowUpdateModal(true)}
               className="text-xs text-slate-500 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-300 underline-offset-4 decoration-2"
             >
-              v1.5.2 Update Note
+              v1.5.3 Update Note
             </button>
           </div>
         </div>

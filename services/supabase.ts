@@ -43,7 +43,10 @@ export const getCurrentUser = async (): Promise<User | null> => {
  * DATABASE - RECIPES
  */
 export const saveRecipeToDB = async (recipe: RecipeResult) => {
-  if (!supabase) return null;
+  if (!supabase) {
+    console.error("Supabase client is not initialized.");
+    return null;
+  }
 
   try {
     const { data, error } = await supabase
@@ -63,12 +66,12 @@ export const saveRecipeToDB = async (recipe: RecipeResult) => {
       .single();
 
     if (error) {
-      console.error('Error saving recipe:', error);
+      console.error('Error saving recipe to Supabase:', error.message, error.details);
       return null;
     }
     return data;
   } catch (err) {
-    console.error('Unexpected error saving recipe:', err);
+    console.error('Unexpected exception while saving recipe:', err);
     return null;
   }
 };
@@ -91,15 +94,13 @@ export const fetchCommunityRecipes = async (
 
   // 정렬 조건 (DB Fetch 전략)
   if (sortBy === 'rating') {
-    // 별점순의 경우, DB에서 총점(rating_sum) 순으로 가져와 후보군을 확보한 뒤,
-    // 클라이언트에서 '평균 점수'로 재정렬합니다.
     query = query.order('rating_sum', { ascending: false });
   } else if (sortBy === 'success') {
-    // 성공 투표순 (Vote Success)
     query = query.order('vote_success', { ascending: false });
   } else {
     // 'latest' 또는 'comments'일 경우 기본적으로 최신순으로 가져온 뒤 처리
-    query = query.order('created_at', { ascending: false });
+    // ID를 보조 정렬로 추가하여 동일 시간대 생성물 정렬 보장
+    query = query.order('created_at', { ascending: false }).order('id', { ascending: false });
   }
 
   // 최대 50개 제한
@@ -122,24 +123,17 @@ export const fetchCommunityRecipes = async (
     download_count: row.download_count,
     vote_success: row.vote_success || 0,
     vote_fail: row.vote_fail || 0,
-    // comments 배열의 첫 번째 요소의 count 값을 가져옴 (Supabase 응답 구조 대응)
     comment_count: row.comments?.[0]?.count || 0
   }));
 
   // 클라이언트 사이드 정렬 수행
   if (sortBy === 'comments') {
-    // 댓글순 정렬
     formattedData.sort((a: RecipeResult, b: RecipeResult) => (b.comment_count || 0) - (a.comment_count || 0));
   } else if (sortBy === 'rating') {
-    // 별점 평균순 정렬 (평균 = sum / count)
     formattedData.sort((a: RecipeResult, b: RecipeResult) => {
       const avgA = (a.rating_count && a.rating_count > 0) ? (a.rating_sum || 0) / a.rating_count : 0;
       const avgB = (b.rating_count && b.rating_count > 0) ? (b.rating_sum || 0) / b.rating_count : 0;
-      
-      if (avgB !== avgA) {
-        return avgB - avgA; // 평균 점수 높은 순
-      }
-      // 평균이 같으면 평가 참여자 수 많은 순
+      if (avgB !== avgA) return avgB - avgA;
       return (b.rating_count || 0) - (a.rating_count || 0);
     });
   }
@@ -149,14 +143,12 @@ export const fetchCommunityRecipes = async (
 
 export const incrementDownloadCount = async (id: number) => {
   if (!id || !supabase) return;
-  
   try {
     const { data: current } = await supabase
       .from('recipes')
       .select('download_count')
       .eq('id', id)
       .single();
-
     if (current) {
       await supabase
         .from('recipes')
@@ -170,14 +162,12 @@ export const incrementDownloadCount = async (id: number) => {
 
 export const updateRating = async (id: number, score: number) => {
   if (!id || !supabase) return;
-
   try {
     const { data: current } = await supabase
       .from('recipes')
       .select('rating_sum, rating_count')
       .eq('id', id)
       .single();
-
     if (current) {
       await supabase
         .from('recipes')
@@ -192,21 +182,17 @@ export const updateRating = async (id: number, score: number) => {
   }
 };
 
-// 투표 업데이트 (증감 지원)
 export const updateVoteCounts = async (id: number, successDelta: number, failDelta: number) => {
   if (!id || !supabase) return;
-
   try {
     const { data: current } = await supabase
       .from('recipes')
       .select('vote_success, vote_fail')
       .eq('id', id)
       .single();
-
     if (current) {
       const newSuccess = Math.max(0, current.vote_success + successDelta);
       const newFail = Math.max(0, current.vote_fail + failDelta);
-      
       await supabase
         .from('recipes')
         .update({ 
@@ -220,27 +206,13 @@ export const updateVoteCounts = async (id: number, successDelta: number, failDel
   }
 };
 
-/**
- * Deprecated: Use updateVoteCounts instead for more control
- */
-export const updateVote = async (id: number, type: 'success' | 'fail') => {
-  const successDelta = type === 'success' ? 1 : 0;
-  const failDelta = type === 'fail' ? 1 : 0;
-  await updateVoteCounts(id, successDelta, failDelta);
-};
-
-/**
- * DATABASE - COMMENTS
- */
 export const fetchComments = async (recipeId: number): Promise<Comment[]> => {
   if (!supabase || !recipeId) return [];
-  
   const { data, error } = await supabase
     .from('comments')
     .select('*')
     .eq('recipe_id', recipeId)
     .order('created_at', { ascending: false });
-
   if (error) {
     console.error('Error fetching comments:', error);
     return [];
@@ -250,20 +222,11 @@ export const fetchComments = async (recipeId: number): Promise<Comment[]> => {
 
 export const addComment = async (recipeId: number, userId: string, userEmail: string, content: string): Promise<Comment | null> => {
   if (!supabase || !recipeId || !userId) return null;
-
   const { data, error } = await supabase
     .from('comments')
-    .insert([
-      {
-        recipe_id: recipeId,
-        user_id: userId,
-        user_email: userEmail,
-        content: content
-      }
-    ])
+    .insert([{ recipe_id: recipeId, user_id: userId, user_email: userEmail, content: content }])
     .select()
     .single();
-
   if (error) {
     console.error('Error adding comment:', error);
     return null;
