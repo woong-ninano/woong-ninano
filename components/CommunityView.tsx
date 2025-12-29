@@ -24,7 +24,6 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user, cache, onUpdateC
   const fetchingRef = useRef(false);
   const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  // 로컬 정렬 함수 (즉각적인 피드백용)
   const sortLocally = useCallback((list: RecipeResult[], criteria: string) => {
     const sorted = [...list];
     if (criteria === 'rating') {
@@ -81,7 +80,6 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user, cache, onUpdateC
     }
   }, [searchTerm, sortBy, recipes, onUpdateCache]);
 
-  // 정렬/검색 변경 시
   useEffect(() => {
     if (recipes.length > 0) {
       const locallySorted = sortLocally(recipes, sortBy);
@@ -95,7 +93,6 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user, cache, onUpdateC
     return () => clearTimeout(timeoutId);
   }, [searchTerm, sortBy]);
 
-  // 스크롤 복구
   useEffect(() => {
     if (containerRef.current && cache.scrollPosition > 0) {
       setTimeout(() => {
@@ -104,7 +101,6 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user, cache, onUpdateC
     }
   }, []);
 
-  // 스크롤 위치 저장 (언마운트 시)
   useEffect(() => {
     const handleScroll = () => {
       onUpdateCache({ scrollPosition: window.scrollY });
@@ -115,7 +111,6 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user, cache, onUpdateC
     };
   }, [onUpdateCache]);
 
-  // 무한 스크롤
   useEffect(() => {
     const target = loadMoreRef.current;
     if (!target || !supabase || loading || !hasMore) return;
@@ -136,16 +131,16 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user, cache, onUpdateC
   };
 
   return (
-    <div ref={containerRef} className="pt-8 px-5 animate-fadeIn pb-10 min-h-full w-full max-w-full box-border overflow-x-hidden">
+    <div ref={containerRef} className="pt-8 px-4 animate-fadeIn pb-10 min-h-full w-full max-w-full box-border overflow-x-hidden">
       <div className="flex justify-between items-start mb-6">
-        <div className="space-y-1.5 flex-1 min-w-0">
+        <div className="space-y-1 flex-1 min-w-0 mr-4">
           <h2 className="text-3xl font-black text-slate-900 truncate">모두의 <span className="brand-orange-text">레시피</span></h2>
-          <p className="text-slate-600 font-bold text-xs sm:text-sm">요리 고수들의 조합을 훔쳐보세요.</p>
+          <p className="text-slate-600 font-bold text-[11px] sm:text-sm">요리 고수들의 조합을 훔쳐보세요.</p>
         </div>
-        <div className="flex flex-col items-end gap-1.5 shrink-0 ml-4">
+        <div className="flex flex-col items-end gap-1.5 shrink-0">
           {user ? (
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full border border-slate-200 truncate max-w-[90px]">
+              <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full border border-slate-200 truncate max-w-[80px]">
                 {user.email?.split('@')[0]}
               </span>
               <button onClick={signOut} className="text-[9px] text-slate-400 underline mt-1">로그아웃</button>
@@ -200,25 +195,32 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user, cache, onUpdateC
           <button 
             key={`${recipe.id}-${idx}`} 
             onClick={() => onSelectRecipe(recipe)} 
-            className="w-full bg-white rounded-3xl p-3 shadow-sm border border-slate-100 flex gap-3 text-left active:scale-[0.98] transition-all hover:border-orange-100 group animate-fadeIn box-border overflow-hidden"
+            className="w-full bg-white rounded-3xl p-2.5 shadow-sm border border-slate-100 flex items-center gap-3 text-left active:scale-[0.98] transition-all hover:border-orange-100 group animate-fadeIn box-border overflow-hidden max-w-full"
             style={{ animationDelay: `${Math.min(idx * 50, 500)}ms` }}
           >
-            <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-50 overflow-hidden shrink-0 border border-slate-50">
-              <img src={recipe.thumbnailUrl || recipe.imageUrl || 'https://via.placeholder.com/150?text=No+Image'} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" loading="lazy" />
+            {/* 이미지 영역: 고정 너비 강제 */}
+            <div className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-2xl bg-slate-50 overflow-hidden shrink-0 border border-slate-50">
+              <img 
+                src={recipe.thumbnailUrl || recipe.imageUrl || 'https://via.placeholder.com/150?text=No+Image'} 
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                loading="lazy" 
+              />
             </div>
-            <div className="flex-1 min-w-0 flex flex-col justify-between py-0.5">
-              <div className="min-w-0">
-                <h3 className="text-sm font-bold text-slate-900 truncate group-hover:text-[#ff5d01] leading-tight">
+            
+            {/* 텍스트 영역: 남은 공간 100% 사용하되 절대 넘지 않음 */}
+            <div className="flex-1 min-w-0 flex flex-col justify-between self-stretch py-0.5 overflow-hidden">
+              <div className="w-full">
+                <h3 className="text-[13px] sm:text-sm font-bold text-slate-900 truncate group-hover:text-[#ff5d01] leading-snug">
                   {recipe.dishName}
                 </h3>
-                <p className="text-[10px] text-slate-400 truncate mt-1 font-medium">
+                <p className="text-[10px] text-slate-400 truncate mt-0.5 font-medium w-full">
                   {recipe.comment}
                 </p>
               </div>
-              <div className="flex items-center gap-2 sm:gap-3 text-[10px] font-bold text-slate-400 mt-1.5 overflow-hidden">
-                <span className="text-yellow-500 shrink-0">⭐ {getStarLabel(recipe.rating_sum, recipe.rating_count)}</span>
-                <span className="text-green-500 shrink-0">😋 {recipe.vote_success}</span>
-                <span className="ml-auto text-[9px] text-slate-300 shrink-0 truncate">
+              <div className="flex items-center gap-2 text-[9px] sm:text-[10px] font-bold text-slate-400 mt-1 w-full overflow-hidden">
+                <span className="text-yellow-500 shrink-0 whitespace-nowrap">⭐ {getStarLabel(recipe.rating_sum, recipe.rating_count)}</span>
+                <span className="text-green-500 shrink-0 whitespace-nowrap">😋 {recipe.vote_success}</span>
+                <span className="ml-auto text-[8px] sm:text-[9px] text-slate-300 shrink-0 truncate">
                   {recipe.created_at ? new Date(recipe.created_at).toLocaleDateString().slice(2) : ''}
                 </span>
               </div>
