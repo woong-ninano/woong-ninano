@@ -347,7 +347,8 @@ const App: React.FC = () => {
       <div className="w-full max-w-lg bg-white min-h-dvh flex flex-col relative toss-card overflow-hidden">
         
         {/* Main Content Area */}
-        <main className="flex-1 overflow-y-auto pb-32 custom-scrollbar">
+        {/* Added overflow-x-hidden to prevent horizontal scrolling */}
+        <main className="flex-1 overflow-y-auto overflow-x-hidden pb-32 custom-scrollbar">
           {renderContent()}
         </main>
 

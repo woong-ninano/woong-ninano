@@ -74,7 +74,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
       if (entries[0].isIntersecting) {
         loadRecipes(false);
       }
-    }, { threshold: 0.5 });
+    }, { threshold: 0.1, rootMargin: '50px' });
 
     if (loadMoreRef.current) {
       observer.observe(loadMoreRef.current);
@@ -98,24 +98,24 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
   };
 
   return (
-    <div className="pt-8 px-6 animate-fadeIn pb-10 min-h-full">
+    <div className="pt-8 px-6 animate-fadeIn pb-10 min-h-full max-w-full">
       {/* Header Area */}
       <div className="flex justify-between items-start mb-6 relative z-50">
-        <div className="space-y-2">
-            <h2 className="text-3xl font-black text-slate-900">
+        <div className="space-y-2 flex-1 min-w-0 pr-2">
+            <h2 className="text-3xl font-black text-slate-900 truncate">
             모두의 <span className="brand-orange-text">레시피</span>
             </h2>
-            <p className="text-slate-600 font-bold text-sm">
+            <p className="text-slate-600 font-bold text-sm truncate">
             다른 사람들의 맛있는 식탁을 엿보세요.
             </p>
         </div>
         
-        <div className="flex flex-col items-end gap-3">
+        <div className="flex flex-col items-end gap-3 shrink-0">
             {/* User Profile / Login */}
             <div className="relative z-50">
                 {user ? (
                     <div className="flex flex-col items-end gap-1">
-                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full border border-slate-200">
+                        <span className="text-[10px] font-bold text-slate-500 bg-slate-100 px-2 py-1 rounded-full border border-slate-200 max-w-[100px] truncate block">
                             {user.email?.split('@')[0]}님
                         </span>
                         <button 
@@ -179,7 +179,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
             <button
               key={tab.id}
               onClick={() => setSortBy(tab.id as any)}
-              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all ${
+              className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all min-w-0 truncate ${
                 sortBy === tab.id ? 'bg-white text-[#ff5d01] shadow-sm' : 'text-slate-400 hover:text-slate-500'
               }`}
             >

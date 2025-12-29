@@ -148,7 +148,7 @@ export const fetchCommunityRecipes = async (
   search: string, 
   sortBy: 'latest' | 'rating' | 'success' | 'comments',
   page: number = 0,
-  pageSize: number = 10
+  pageSize: number = 5 // Changed default from 10 to 5
 ): Promise<RecipeResult[]> => {
   if (!supabase) return [];
 
