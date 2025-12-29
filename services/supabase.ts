@@ -5,13 +5,13 @@ import { RecipeResult, Comment } from '../types';
 const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
-// Supabase 클라이언트 초기화 및 상태 체크
-export const supabase = (supabaseUrl && supabaseKey && supabaseUrl !== "undefined") 
+// Supabase 클라이언트 초기화
+export const supabase = (supabaseUrl && supabaseKey && supabaseUrl !== "undefined" && supabaseUrl !== "") 
   ? createClient(supabaseUrl, supabaseKey) 
   : null;
 
 if (!supabase) {
-  console.error("⚠️ Supabase 환경 변수가 설정되지 않았거나 유효하지 않습니다. VITE_SUPABASE_URL 및 VITE_SUPABASE_ANON_KEY를 확인하세요.");
+  console.warn("⚠️ Supabase 설정이 누락되었습니다. .env 또는 환경변수 설정을 확인하세요.");
 }
 
 /**
@@ -20,17 +20,16 @@ if (!supabase) {
 const base64ToBlob = (base64: string): Blob => {
   try {
     const parts = base64.split(';base64,');
-    if (parts.length < 2) return new Blob();
-    const contentType = parts[0].split(':')[1];
-    const raw = window.atob(parts[1]);
-    const rawLength = raw.length;
-    const uInt8Array = new Uint8Array(rawLength);
-    for (let i = 0; i < rawLength; ++i) {
+    const contentType = parts.length > 1 ? parts[0].split(':')[1] : 'image/jpeg';
+    const b64Data = parts.length > 1 ? parts[1] : parts[0];
+    const raw = window.atob(b64Data);
+    const uInt8Array = new Uint8Array(raw.length);
+    for (let i = 0; i < raw.length; ++i) {
       uInt8Array[i] = raw.charCodeAt(i);
     }
     return new Blob([uInt8Array], { type: contentType });
   } catch (e) {
-    console.error("Base64 to Blob failed", e);
+    console.error("Base64 decoding failed", e);
     return new Blob();
   }
 };
@@ -53,7 +52,7 @@ const createThumbnail = (base64Str: string, maxWidth = 400): Promise<string> => 
       const ctx = canvas.getContext('2d');
       if (!ctx) return resolve(base64Str);
       ctx.drawImage(img, 0, 0, width, height);
-      resolve(canvas.toDataURL('image/jpeg', 0.85));
+      resolve(canvas.toDataURL('image/jpeg', 0.8));
     };
     img.onerror = () => resolve(base64Str);
   });
@@ -64,14 +63,30 @@ const uploadImageToStorage = async (base64Image: string, prefix = 'full'): Promi
   try {
     const blob = base64ToBlob(base64Image);
     const fileName = `${prefix}_${Date.now()}_${Math.random().toString(36).substring(2, 9)}.jpg`;
-    const { error: uploadError } = await supabase.storage
+    
+    console.log(`[Storage] Uploading ${prefix} image...`);
+    const { data, error: uploadError } = await supabase.storage
       .from('recipe-images')
-      .upload(fileName, blob, { contentType: 'image/jpeg', upsert: false });
-    if (uploadError) throw uploadError;
-    const { data } = supabase.storage.from('recipe-images').getPublicUrl(fileName);
-    return data.publicUrl;
+      .upload(fileName, blob, { 
+        contentType: 'image/jpeg', 
+        upsert: false,
+        cacheControl: '3600'
+      });
+    
+    if (uploadError) {
+      console.error(`[Storage Error] ${prefix}:`, uploadError.message);
+      // 권한 에러(42501)인 경우 사용자에게 알림
+      if (uploadError.message.includes('42501') || uploadError.message.toLowerCase().includes('permission')) {
+        console.error("💡 Storage 권한 에러: Supabase 대시보드 Storage -> recipe-images -> Policies에서 모든 권한을 허용해주세요.");
+      }
+      return null;
+    }
+    
+    const { data: urlData } = supabase.storage.from('recipe-images').getPublicUrl(fileName);
+    console.log(`[Storage Success] ${prefix} URL:`, urlData.publicUrl);
+    return urlData.publicUrl;
   } catch (err) {
-    console.error('Upload Error:', err);
+    console.error('[Storage Unexpected Error]:', err);
     return null;
   }
 };
@@ -80,34 +95,24 @@ const uploadImageToStorage = async (base64Image: string, prefix = 'full'): Promi
  * AUTH
  */
 export const signInWithGoogle = async () => {
-  if (!supabase) {
-    alert("Supabase 연결 설정이 되어 있지 않습니다.");
-    return;
-  }
+  if (!supabase) return alert("Supabase 연결 설정이 필요합니다.");
   try {
+    const currentUrl = window.location.origin + window.location.pathname;
     const { error } = await (supabase.auth as any).signInWithOAuth({
       provider: 'google',
       options: { 
-        redirectTo: window.location.origin, 
-        queryParams: { access_type: 'offline', prompt: 'consent' } 
-      },
+        redirectTo: currentUrl,
+        queryParams: { access_type: 'offline', prompt: 'consent' }
+      }
     });
     if (error) throw error;
-  } catch (err) {
-    console.error("Login Error:", err);
-    alert("로그인 시도 중 오류가 발생했습니다.");
+  } catch (err: any) {
+    console.error("Login Error:", err.message);
   }
 };
 
 export const signOut = async () => {
-  if (!supabase) return;
-  await (supabase.auth as any).signOut();
-};
-
-export const getCurrentUser = async (): Promise<any | null> => {
-  if (!supabase) return null;
-  const { data: { session } } = await (supabase.auth as any).getSession();
-  return session?.user || null;
+  if (supabase) await (supabase.auth as any).signOut();
 };
 
 /**
@@ -119,17 +124,28 @@ export const saveRecipeToDB = async (recipe: RecipeResult) => {
     let finalImageUrl = recipe.imageUrl;
     let finalThumbnailUrl = undefined;
 
+    // 1. 이미지 업로드 시도
     if (recipe.imageUrl && recipe.imageUrl.startsWith('data:image')) {
       const thumbBase64 = await createThumbnail(recipe.imageUrl);
       const [fullUrl, thumbUrl] = await Promise.all([
         uploadImageToStorage(recipe.imageUrl, 'full'),
         uploadImageToStorage(thumbBase64, 'thumb')
       ]);
+      
       if (fullUrl) finalImageUrl = fullUrl;
       if (thumbUrl) finalThumbnailUrl = thumbUrl;
     }
 
-    const recipeToSave = { ...recipe, imageUrl: finalImageUrl, thumbnailUrl: finalThumbnailUrl };
+    // 2. 레시피 데이터 준비
+    const recipeToSave = { 
+      ...recipe, 
+      imageUrl: finalImageUrl, 
+      thumbnailUrl: finalThumbnailUrl 
+    };
+
+    console.log("[DB] Inserting recipe data...");
+    
+    // 3. Insert 실행
     const { data, error } = await supabase
       .from('recipes')
       .insert([{
@@ -144,11 +160,21 @@ export const saveRecipeToDB = async (recipe: RecipeResult) => {
         vote_success: 0,
         vote_fail: 0
       }])
-      .select().single();
-    if (error) throw error;
+      .select()
+      .single();
+
+    if (error) {
+      console.error('[DB Insert Error]:', error.message, error.details);
+      if (error.code === '42501') {
+        console.error("💡 DB RLS 권한 에러: SQL Editor에서 'create policy' 명령어를 다시 실행해주세요.");
+      }
+      return null;
+    }
+
+    console.log("[DB Success] Recipe saved with ID:", data.id);
     return data;
   } catch (err) {
-    console.error('Save DB Error:', err);
+    console.error('[Save Flow Failed]:', err);
     return null;
   }
 };
@@ -157,17 +183,7 @@ export const fetchRecipeById = async (id: number): Promise<RecipeResult | null> 
   if (!supabase || !id) return null;
   const { data, error } = await supabase.from('recipes').select('*').eq('id', id).single();
   if (error || !data) return null;
-
-  return {
-    ...data.full_json,
-    id: data.id,
-    created_at: data.created_at,
-    rating_sum: data.rating_sum,
-    rating_count: data.rating_count,
-    download_count: data.download_count,
-    vote_success: data.vote_success,
-    vote_fail: data.vote_fail
-  } as RecipeResult;
+  return { ...data.full_json, id: data.id, created_at: data.created_at } as RecipeResult;
 };
 
 export const fetchCommunityRecipes = async (
@@ -177,62 +193,36 @@ export const fetchCommunityRecipes = async (
   pageSize: number = 8
 ): Promise<RecipeResult[]> => {
   if (!supabase) return [];
-  
   try {
-    // 1단계: 기본 쿼리 구성 (관계성 쿼리 comments(count)는 DB 설정에 따라 실패할 수 있으므로 주의)
-    let query = supabase.from('recipes').select(`
-      id, 
-      dish_name, 
-      image_url, 
-      thumbnail_url, 
-      comment, 
-      created_at, 
-      rating_sum, 
-      rating_count, 
-      vote_success, 
-      vote_fail, 
-      download_count
-    `);
-
+    let query = supabase.from('recipes').select('*');
     if (search) query = query.ilike('dish_name', `%${search}%`);
     
-    // 2단계: 정렬 적용
-    if (sortBy === 'rating') {
-      // 별점 평균(sum/count)을 바로 정렬할 수 없으므로 보통 sum 기준 정렬
-      query = query.order('rating_sum', { ascending: false });
-    } else if (sortBy === 'success') {
-      query = query.order('vote_success', { ascending: false });
-    } else if (sortBy === 'comments') {
-      // 댓글순 정렬은 Join 이슈가 있을 수 있어 기본적으로 최신순으로 대체하거나 추후 보강
-      query = query.order('created_at', { ascending: false });
-    } else {
-      query = query.order('created_at', { ascending: false }).order('id', { ascending: false });
-    }
+    if (sortBy === 'rating') query = query.order('rating_sum', { ascending: false });
+    else if (sortBy === 'success') query = query.order('vote_success', { ascending: false });
+    else query = query.order('created_at', { ascending: false }).order('id', { ascending: false });
 
     const from = page * pageSize;
     const { data, error } = await query.range(from, from + pageSize - 1);
     
     if (error) {
-      console.error("Supabase Query Error:", error);
+      console.error("Fetch Community Error:", error.message);
       return [];
     }
 
     return data.map((row: any) => ({
       id: row.id,
-      dishName: row.dish_name || '이름 없음',
+      dishName: row.dish_name,
       imageUrl: row.image_url,
       thumbnailUrl: row.thumbnail_url || row.image_url,
-      comment: row.comment || '',
+      comment: row.comment,
       created_at: row.created_at,
-      rating_sum: row.rating_sum || 0,
-      rating_count: row.rating_count || 0,
-      download_count: row.download_count || 0,
-      vote_success: row.vote_success || 0,
-      vote_fail: row.vote_fail || 0,
-      comment_count: 0 // 관계성 쿼리 제거로 인한 기본값 설정
+      rating_sum: row.rating_sum,
+      rating_count: row.rating_count,
+      vote_success: row.vote_success,
+      vote_fail: row.vote_fail
     } as RecipeResult));
   } catch (err) {
-    console.error("Fetch Community Recipes Global Error:", err);
+    console.error("Community Global Error:", err);
     return [];
   }
 };
