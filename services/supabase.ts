@@ -153,7 +153,8 @@ export const fetchCommunityRecipes = async (
   if (!supabase) return [];
 
   // [Optimization #2] full_json을 제외하고 필요한 컬럼만 명시적으로 선택
-  // 주의: image_url, comment 컬럼이 DB에 존재해야 효율적임. 없으면 null 반환되므로 full_json fallback 필요.
+  // 중요: full_json을 가져오지 않으므로, 데이터가 가벼워져 속도가 대폭 향상됨.
+  // 단, dish_name, image_url 컬럼이 DB에 채워져 있어야 함 (마이그레이션 필수)
   let query = supabase
     .from('recipes')
     .select(`
@@ -167,7 +168,6 @@ export const fetchCommunityRecipes = async (
       vote_success, 
       vote_fail, 
       download_count,
-      full_json, 
       comments(count)
     `);
 
@@ -199,16 +199,19 @@ export const fetchCommunityRecipes = async (
 
   // DB 데이터를 RecipeResult 형태로 매핑
   const formattedData = data.map((row: any) => {
-    // full_json을 fallback으로 사용하여 마이그레이션 전 데이터 호환성 유지
-    const fullData = row.full_json || {};
-    
     return {
-      ...fullData, // full_json의 내용 (재료 목록, 레시피 등 상세 정보)
+      // full_json을 가져오지 않으므로 필요한 필드는 DB 컬럼에서 직접 매핑
+      // fallback을 사용하여 기존 데이터가 마이그레이션 되지 않았을 때 깨짐 방지 (완벽하진 않음)
       id: row.id,
-      dishName: row.dish_name,
-      // 별도 컬럼이 있으면 우선 사용, 없으면 json 내부 값 사용
-      imageUrl: row.image_url || fullData.imageUrl, 
-      comment: row.comment || fullData.comment,
+      dishName: row.dish_name || '이름 없는 레시피',
+      imageUrl: row.image_url, 
+      comment: row.comment || '설명이 없습니다.',
+      ingredientsList: '', // 리스트 뷰에서는 불필요
+      easyRecipe: '', // 리스트 뷰에서는 불필요
+      gourmetRecipe: '', // 리스트 뷰에서는 불필요
+      similarRecipes: [],
+      referenceLinks: [],
+      
       created_at: row.created_at,
       rating_sum: row.rating_sum,
       rating_count: row.rating_count,

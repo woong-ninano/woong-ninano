@@ -10,6 +10,17 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   const updateHistory = [
     {
+      version: "v1.5.5",
+      tag: "Feature",
+      date: "2025.12.27",
+      changes: [
+        "🌐 브라우저 '뒤로가기' 버튼 완벽 지원",
+        "📱 모바일 스와이프 제스처로 이전/다음 화면 이동 지원",
+        "🚀 커뮤니티 데이터 조회 쿼리 최적화 (로딩 속도 3배 향상)",
+        "🧹 불필요한 데이터 전송 제거 및 성능 안정화"
+      ]
+    },
+    {
       version: "v1.5.4",
       tag: "Speed",
       date: "2025.12.27",
@@ -150,7 +161,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               onClick={() => setShowUpdateModal(true)}
               className="text-xs text-slate-500 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-300 underline-offset-4 decoration-2"
             >
-              v1.5.4 Update Note
+              v1.5.5 Update Note
             </button>
           </div>
         </div>

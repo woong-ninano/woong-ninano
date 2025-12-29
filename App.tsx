@@ -47,6 +47,54 @@ const App: React.FC = () => {
   // 사용자 인증 상태
   const [user, setUser] = useState<User | null>(null);
 
+  /**
+   * HISTORY & NAVIGATION HANDLING
+   */
+  useEffect(() => {
+    // 초기 로드 시 현재 상태를 히스토리에 기록 (replace)
+    window.history.replaceState({ step: Step.Welcome, activeTab: 'home' }, '', window.location.search);
+
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state) {
+        // 브라우저 뒤로가기/앞으로가기 발생 시 상태 동기화
+        setStep(event.state.step);
+        setActiveTab(event.state.activeTab || 'home');
+      } else {
+        // 상태가 없는 경우 초기화
+        setStep(Step.Welcome);
+        setActiveTab('home');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  // 네비게이션 래퍼 함수
+  const navigateTo = (nextStep: Step, nextTab: 'home' | 'community' = 'home', method: 'push' | 'replace' = 'push') => {
+    setStep(nextStep);
+    setActiveTab(nextTab);
+    const state = { step: nextStep, activeTab: nextTab };
+    // URL 쿼리는 디버깅용으로만 남기고 실제로는 state 객체에 의존
+    const url = `?tab=${nextTab}&step=${nextStep}`;
+    
+    if (method === 'push') {
+      window.history.pushState(state, '', url);
+    } else {
+      window.history.replaceState(state, '', url);
+    }
+  };
+
+  const goBack = () => {
+    if (window.history.length > 1) {
+      window.history.back();
+    } else {
+      // 히스토리가 없을 경우 안전하게 홈으로
+      navigateTo(Step.Welcome, 'home', 'replace');
+    }
+  };
+
+
   // 초기 로드: 세션 체크 및 데이터 복구 (OAuth 리다이렉트 대응)
   useEffect(() => {
     if (!supabase) return;
@@ -69,8 +117,9 @@ const App: React.FC = () => {
       try {
         setRecipeHistory(JSON.parse(savedHistory));
         setCurrentRecipeIndex(parseInt(savedIndex, 10));
-        setStep(Step.Result); // 결과 화면으로 복귀
-        setActiveTab('home');
+        // 복구 시에는 히스토리 교체
+        navigateTo(Step.Result, 'home', 'replace');
+        
         // 복구 후 삭제
         sessionStorage.removeItem('temp_recipe_history');
         sessionStorage.removeItem('temp_recipe_index');
@@ -97,17 +146,17 @@ const App: React.FC = () => {
     setChoices(prev => ({ ...prev, mode: 'seasonal', ingredients: '' }));
     const items = await fetchSeasonalIngredients([]);
     setSeasonalItems(items);
-    setStep(Step.SeasonalSelection);
+    navigateTo(Step.SeasonalSelection, 'home');
     setIsLoading(false);
   };
 
   const startConvenienceFlow = async () => {
     setIsLoading(true);
     setChoices(prev => ({ ...prev, mode: 'convenience', ingredients: '' }));
-    setConvenienceType('meal'); // 기본은 식사
+    setConvenienceType('meal');
     const items = await fetchConvenienceTopics([], 'meal');
     setConvenienceItems(items);
-    setStep(Step.ConvenienceSelection);
+    navigateTo(Step.ConvenienceSelection, 'home');
     setIsLoading(false);
   };
 
@@ -145,14 +194,14 @@ const App: React.FC = () => {
 
   const startFridgeFlow = () => {
     setChoices(prev => ({ ...prev, mode: 'fridge', ingredients: '' }));
-    setStep(Step.Ingredients);
+    navigateTo(Step.Ingredients, 'home');
   };
 
   const handleIngredientsComplete = async () => {
     setIsLoading(true);
     const data = await fetchSuggestions(choices.ingredients);
     setSuggestions(data);
-    setStep(Step.Suggestions);
+    navigateTo(Step.Suggestions, 'home');
     setIsLoading(false);
   };
 
@@ -162,7 +211,9 @@ const App: React.FC = () => {
   };
 
   const startGeneration = async (isRegen: boolean = false, overridePrompt?: string) => {
-    setStep(Step.Loading);
+    // 로딩 화면은 히스토리에 쌓지 않고 교체 (뒤로가기 시 로딩화면 건너뛰기 위함)
+    navigateTo(Step.Loading, 'home', 'replace');
+    
     try {
       const finalChoices = overridePrompt 
         ? { ...choices, ingredients: overridePrompt, theme: choices.mode === 'convenience' ? '편의점 꿀조합' : choices.theme } 
@@ -201,11 +252,13 @@ const App: React.FC = () => {
       });
       setCurrentRecipeIndex(prev => prev + 1);
       
-      setStep(Step.Result);
+      // 결과 화면으로 이동 (Push)
+      navigateTo(Step.Result, 'home', 'push');
     } catch (err) {
       console.error(err);
       alert("AI 셰프가 고민에 빠졌습니다. 다시 시도해 주세요!");
-      setStep(Step.Welcome);
+      // 에러 시 웰컴으로 리셋
+      navigateTo(Step.Welcome, 'home', 'replace');
     }
   };
 
@@ -224,15 +277,15 @@ const App: React.FC = () => {
   const handleReset = () => {
     setRecipeHistory([]);
     setCurrentRecipeIndex(-1);
-    setStep(Step.Welcome);
-    setActiveTab('home');
+    // 처음으로 돌아갈 때는 기존 히스토리를 덮어쓰거나 새로 시작
+    navigateTo(Step.Welcome, 'home', 'push');
   };
 
   const handleCommunityRecipeSelect = (recipe: RecipeResult) => {
     setRecipeHistory([recipe]);
     setCurrentRecipeIndex(0);
-    setStep(Step.Result);
-    setActiveTab('home');
+    // 커뮤니티 탭 상태에서 결과 화면으로 이동 (홈 탭 컨텍스트로 전환하여 결과 표시)
+    navigateTo(Step.Result, 'home', 'push');
   };
 
   const renderContent = () => {
@@ -244,17 +297,17 @@ const App: React.FC = () => {
     if (isLoading) return <LoadingStep customMessage="데이터를 불러오고 있어요..." />;
 
     switch (step) {
-      case Step.Welcome: return <WelcomeStep onNext={() => setStep(Step.ModeSelection)} />;
+      case Step.Welcome: return <WelcomeStep onNext={() => navigateTo(Step.ModeSelection, 'home')} />;
       case Step.ModeSelection: return (
         <ModeSelectionStep 
           onFridge={startFridgeFlow} 
           onSeasonal={startSeasonalFlow} 
           onConvenience={startConvenienceFlow} 
-          onBack={() => setStep(Step.Welcome)} 
+          onBack={goBack} 
         />
       );
-      case Step.Ingredients: return <IngredientsStep choices={choices} setChoices={setChoices} onNext={() => setStep(Step.CuisineSelection)} onBack={() => setStep(Step.ModeSelection)} />;
-      case Step.SeasonalSelection: return <SeasonalStep choices={choices} setChoices={setChoices} items={seasonalItems} onNext={() => setStep(Step.CuisineSelection)} onBack={() => setStep(Step.ModeSelection)} onMore={loadMoreSeasonal} />;
+      case Step.Ingredients: return <IngredientsStep choices={choices} setChoices={setChoices} onNext={() => navigateTo(Step.CuisineSelection, 'home')} onBack={goBack} />;
+      case Step.SeasonalSelection: return <SeasonalStep choices={choices} setChoices={setChoices} items={seasonalItems} onNext={() => navigateTo(Step.CuisineSelection, 'home')} onBack={goBack} onMore={loadMoreSeasonal} />;
       case Step.ConvenienceSelection: return (
         <ConvenienceStep 
           type={convenienceType}
@@ -263,13 +316,13 @@ const App: React.FC = () => {
           onLoadMore={loadMoreConvenienceItems}
           onLoadSnack={loadSnackItems}
           onLoadMeal={loadMealItems}
-          onBack={() => setStep(Step.ModeSelection)} 
+          onBack={goBack} 
         />
       );
-      case Step.CuisineSelection: return <CuisineStep choices={choices} setChoices={setChoices} onNext={handleIngredientsComplete} onBack={() => choices.mode === 'fridge' ? setStep(Step.Ingredients) : setStep(Step.SeasonalSelection)} />;
-      case Step.Suggestions: return <SuggestionStep choices={choices} setChoices={setChoices} suggestions={suggestions} onNext={() => setStep(Step.Preferences)} onBack={() => setStep(Step.CuisineSelection)} />;
-      case Step.Preferences: return <PreferencesStep choices={choices} setChoices={setChoices} onNext={() => setStep(Step.Environment)} onBack={() => setStep(Step.Suggestions)} />;
-      case Step.Environment: return <EnvironmentStep choices={choices} setChoices={setChoices} onGenerate={() => startGeneration()} onBack={() => setStep(Step.Preferences)} />;
+      case Step.CuisineSelection: return <CuisineStep choices={choices} setChoices={setChoices} onNext={handleIngredientsComplete} onBack={goBack} />;
+      case Step.Suggestions: return <SuggestionStep choices={choices} setChoices={setChoices} suggestions={suggestions} onNext={() => navigateTo(Step.Preferences, 'home')} onBack={goBack} />;
+      case Step.Preferences: return <PreferencesStep choices={choices} setChoices={setChoices} onNext={() => navigateTo(Step.Environment, 'home')} onBack={goBack} />;
+      case Step.Environment: return <EnvironmentStep choices={choices} setChoices={setChoices} onGenerate={() => startGeneration()} onBack={goBack} />;
       case Step.Loading: return <LoadingStep />;
       case Step.Result: return result ? (
         <ResultView 
@@ -285,7 +338,7 @@ const App: React.FC = () => {
           onGoForward={handleGoForwardRecipe}
         />
       ) : null;
-      default: return <WelcomeStep onNext={() => setStep(Step.ModeSelection)} />;
+      default: return <WelcomeStep onNext={() => navigateTo(Step.ModeSelection, 'home')} />;
     }
   };
 
@@ -301,7 +354,7 @@ const App: React.FC = () => {
         {/* Bottom Navigation */}
         <nav className="h-[86px] bg-white border-t border-slate-100 flex items-center justify-around fixed bottom-0 w-full max-w-lg z-50 shadow-[0_-5px_20px_rgba(0,0,0,0.03)] pb-2 rounded-t-[20px]">
           <button 
-            onClick={() => setActiveTab('home')}
+            onClick={() => navigateTo(step === Step.Community ? Step.Welcome : step, 'home', 'push')}
             className={`flex flex-col items-center gap-1.5 w-full h-full justify-center transition-all group ${activeTab === 'home' ? 'text-[#ff5d01]' : 'text-slate-400 hover:text-slate-600'}`}
           >
             {/* Minimal Chef Hat Icon */}
@@ -314,8 +367,8 @@ const App: React.FC = () => {
           
           <button 
             onClick={() => {
-              setActiveTab('community');
-              setStep(Step.Community); 
+              // 커뮤니티 탭으로 이동 (Step은 Community 유지)
+              navigateTo(Step.Community, 'community', 'push');
             }}
             className={`flex flex-col items-center gap-1.5 w-full h-full justify-center transition-all group ${activeTab === 'community' ? 'text-[#ff5d01]' : 'text-slate-400 hover:text-slate-600'}`}
           >
