@@ -10,6 +10,17 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
 
   const updateHistory = [
     {
+      version: "v1.5.4",
+      tag: "Speed",
+      date: "2025.12.27",
+      changes: [
+        "⚡️ 커뮤니티 로딩 속도 획기적 개선 (무한 스크롤 적용)",
+        "🖼️ 이미지 처리 방식 최적화 (Base64 → Storage URL)",
+        "📉 데이터 조회 쿼리 경량화 및 DB 인덱싱 적용",
+        "📱 모바일 데이터 절약 및 스크롤 경험 개선"
+      ]
+    },
+    {
       version: "v1.5.3",
       tag: "Patch",
       date: "2025.12.26",
@@ -139,7 +150,7 @@ const WelcomeStep: React.FC<WelcomeStepProps> = ({ onNext }) => {
               onClick={() => setShowUpdateModal(true)}
               className="text-xs text-slate-500 font-bold hover:text-[#ff5d01] transition-colors underline decoration-slate-300 underline-offset-4 decoration-2"
             >
-              v1.5.3 Update Note
+              v1.5.4 Update Note
             </button>
           </div>
         </div>

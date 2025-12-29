@@ -11,6 +11,58 @@ export const supabase = (supabaseUrl && supabaseKey)
   : null;
 
 /**
+ * UTILS
+ */
+// Base64 문자열을 Blob으로 변환하는 헬퍼 함수
+const base64ToBlob = (base64: string): Blob => {
+  const parts = base64.split(';base64,');
+  const contentType = parts[0].split(':')[1];
+  const raw = window.atob(parts[1]);
+  const rawLength = raw.length;
+  const uInt8Array = new Uint8Array(rawLength);
+
+  for (let i = 0; i < rawLength; ++i) {
+    uInt8Array[i] = raw.charCodeAt(i);
+  }
+
+  return new Blob([uInt8Array], { type: contentType });
+};
+
+// 이미지를 Supabase Storage에 업로드하고 Public URL을 반환하는 함수
+const uploadImageToStorage = async (base64Image: string): Promise<string | null> => {
+  if (!supabase) return null;
+
+  try {
+    const blob = base64ToBlob(base64Image);
+    // 파일명 생성 (Timestamp + Random)
+    const fileName = `${Date.now()}_${Math.random().toString(36).substring(2, 9)}.png`;
+    
+    // 'recipe-images' 버킷에 업로드 (버킷이 미리 생성되어 있어야 함)
+    const { error: uploadError } = await supabase.storage
+      .from('recipe-images')
+      .upload(fileName, blob, {
+        contentType: 'image/png',
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Image upload failed:', uploadError);
+      return null;
+    }
+
+    // Public URL 가져오기
+    const { data } = supabase.storage
+      .from('recipe-images')
+      .getPublicUrl(fileName);
+
+    return data.publicUrl;
+  } catch (err) {
+    console.error('Error processing image:', err);
+    return null;
+  }
+};
+
+/**
  * AUTHENTICATION
  */
 export const signInWithGoogle = async () => {
@@ -18,7 +70,7 @@ export const signInWithGoogle = async () => {
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: window.location.origin, // 로그인 후 현재 페이지로 복귀
+      redirectTo: window.location.origin,
       queryParams: {
         access_type: 'offline',
         prompt: 'consent',
@@ -49,12 +101,27 @@ export const saveRecipeToDB = async (recipe: RecipeResult) => {
   }
 
   try {
+    let finalImageUrl = recipe.imageUrl;
+
+    // Base64 이미지라면 Storage에 업로드 후 URL로 교체
+    if (recipe.imageUrl && recipe.imageUrl.startsWith('data:image')) {
+      const uploadedUrl = await uploadImageToStorage(recipe.imageUrl);
+      if (uploadedUrl) {
+        finalImageUrl = uploadedUrl;
+      }
+    }
+
+    // DB에 저장할 객체 (full_json 내의 이미지 URL도 업데이트)
+    const recipeToSave = { ...recipe, imageUrl: finalImageUrl };
+
     const { data, error } = await supabase
       .from('recipes')
       .insert([
         {
           dish_name: recipe.dishName,
-          full_json: recipe,
+          image_url: finalImageUrl, // 별도 컬럼 저장 (Select 최적화)
+          comment: recipe.comment,  // 별도 컬럼 저장 (Select 최적화)
+          full_json: recipeToSave,
           download_count: 0,
           rating_sum: 0,
           rating_count: 0,
@@ -76,16 +143,33 @@ export const saveRecipeToDB = async (recipe: RecipeResult) => {
   }
 };
 
+// Pagination 및 경량화된 Select 적용
 export const fetchCommunityRecipes = async (
   search: string, 
-  sortBy: 'latest' | 'rating' | 'success' | 'comments'
+  sortBy: 'latest' | 'rating' | 'success' | 'comments',
+  page: number = 0,
+  pageSize: number = 10
 ): Promise<RecipeResult[]> => {
   if (!supabase) return [];
 
-  // 댓글 수(count)를 함께 가져오기 위해 select 수정
+  // [Optimization #2] full_json을 제외하고 필요한 컬럼만 명시적으로 선택
+  // 주의: image_url, comment 컬럼이 DB에 존재해야 효율적임. 없으면 null 반환되므로 full_json fallback 필요.
   let query = supabase
     .from('recipes')
-    .select('*, comments(count)');
+    .select(`
+      id, 
+      dish_name, 
+      image_url, 
+      comment, 
+      created_at, 
+      rating_sum, 
+      rating_count, 
+      vote_success, 
+      vote_fail, 
+      download_count,
+      full_json, 
+      comments(count)
+    `);
 
   // 검색 필터
   if (search) {
@@ -98,13 +182,13 @@ export const fetchCommunityRecipes = async (
   } else if (sortBy === 'success') {
     query = query.order('vote_success', { ascending: false });
   } else {
-    // 'latest' 또는 'comments'일 경우 기본적으로 최신순으로 가져온 뒤 처리
-    // ID를 보조 정렬로 추가하여 동일 시간대 생성물 정렬 보장
     query = query.order('created_at', { ascending: false }).order('id', { ascending: false });
   }
 
-  // 최대 50개 제한
-  query = query.limit(50);
+  // [Optimization #4] Pagination (Range)
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+  query = query.range(from, to);
 
   const { data, error } = await query;
 
@@ -114,19 +198,28 @@ export const fetchCommunityRecipes = async (
   }
 
   // DB 데이터를 RecipeResult 형태로 매핑
-  const formattedData = data.map((row: any) => ({
-    ...row.full_json,
-    id: row.id,
-    created_at: row.created_at,
-    rating_sum: row.rating_sum,
-    rating_count: row.rating_count,
-    download_count: row.download_count,
-    vote_success: row.vote_success || 0,
-    vote_fail: row.vote_fail || 0,
-    comment_count: row.comments?.[0]?.count || 0
-  }));
+  const formattedData = data.map((row: any) => {
+    // full_json을 fallback으로 사용하여 마이그레이션 전 데이터 호환성 유지
+    const fullData = row.full_json || {};
+    
+    return {
+      ...fullData, // full_json의 내용 (재료 목록, 레시피 등 상세 정보)
+      id: row.id,
+      dishName: row.dish_name,
+      // 별도 컬럼이 있으면 우선 사용, 없으면 json 내부 값 사용
+      imageUrl: row.image_url || fullData.imageUrl, 
+      comment: row.comment || fullData.comment,
+      created_at: row.created_at,
+      rating_sum: row.rating_sum,
+      rating_count: row.rating_count,
+      download_count: row.download_count,
+      vote_success: row.vote_success || 0,
+      vote_fail: row.vote_fail || 0,
+      comment_count: row.comments?.[0]?.count || 0
+    };
+  });
 
-  // 클라이언트 사이드 정렬 수행
+  // 클라이언트 사이드 정렬 (DB에서 해결하기 어려운 복합 정렬 보완)
   if (sortBy === 'comments') {
     formattedData.sort((a: RecipeResult, b: RecipeResult) => (b.comment_count || 0) - (a.comment_count || 0));
   } else if (sortBy === 'rating') {

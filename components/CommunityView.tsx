@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { fetchCommunityRecipes, signInWithGoogle, signOut } from '../services/supabase';
 import { RecipeResult } from '../types';
 import { User } from '@supabase/supabase-js';
@@ -9,31 +9,87 @@ interface Props {
   user: User | null;
 }
 
+const PAGE_SIZE = 10;
+
 const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
   const [recipes, setRecipes] = useState<RecipeResult[]>([]);
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [sortBy, setSortBy] = useState<'latest' | 'rating' | 'success' | 'comments'>('latest');
+  
+  // Pagination State
+  const [page, setPage] = useState(0);
+  const [hasMore, setHasMore] = useState(true);
+  const observerRef = useRef<IntersectionObserver | null>(null);
+  const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
-  const loadRecipes = async () => {
+  // 데이터 로딩 함수 (초기화 or 추가 로딩)
+  const loadRecipes = useCallback(async (isReset: boolean = false) => {
+    if (loading) return;
+    
     setLoading(true);
     try {
-      const data = await fetchCommunityRecipes(searchTerm, sortBy);
-      setRecipes(data);
+      const targetPage = isReset ? 0 : page;
+      const newRecipes = await fetchCommunityRecipes(searchTerm, sortBy, targetPage, PAGE_SIZE);
+      
+      if (newRecipes.length < PAGE_SIZE) {
+        setHasMore(false);
+      } else {
+        setHasMore(true);
+      }
+
+      if (isReset) {
+        setRecipes(newRecipes);
+        setPage(1); // 다음 페이지 준비
+      } else {
+        setRecipes(prev => {
+            // 중복 제거 (혹시 모를 중복 fetch 방지)
+            const existingIds = new Set(prev.map(r => r.id));
+            const uniqueNew = newRecipes.filter(r => !existingIds.has(r.id));
+            return [...prev, ...uniqueNew];
+        });
+        setPage(prev => prev + 1);
+      }
     } catch (err) {
       console.error("Failed to load community recipes:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [loading, page, searchTerm, sortBy]);
 
+  // 검색어나 정렬 조건이 바뀌면 리스트 초기화
   useEffect(() => {
-    loadRecipes();
-  }, [sortBy]);
+    setPage(0);
+    setHasMore(true);
+    setRecipes([]); // 깜빡임 방지 또는 스켈레톤 UI를 위해 유지할 수도 있음
+    loadRecipes(true);
+  }, [sortBy, searchTerm]); // loadRecipes는 의존성에서 제외 (useCallback 사용하더라도 루프 방지)
+
+  // Infinite Scroll Observer
+  useEffect(() => {
+    if (loading) return;
+    if (!hasMore) return;
+
+    const observer = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting) {
+        loadRecipes(false);
+      }
+    }, { threshold: 0.5 });
+
+    if (loadMoreRef.current) {
+      observer.observe(loadMoreRef.current);
+    }
+
+    observerRef.current = observer;
+
+    return () => {
+      if (observerRef.current) observerRef.current.disconnect();
+    };
+  }, [loading, hasMore, loadRecipes]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    loadRecipes();
+    // useEffect에서 searchTerm 변경 감지하여 자동 로딩됨
   };
 
   const getStarAverage = (sum?: number, count?: number) => {
@@ -42,7 +98,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
   };
 
   return (
-    <div className="pt-8 px-6 animate-fadeIn pb-10">
+    <div className="pt-8 px-6 animate-fadeIn pb-10 min-h-full">
       {/* Header Area */}
       <div className="flex justify-between items-start mb-6 relative z-50">
         <div className="space-y-2">
@@ -79,9 +135,9 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
                 )}
             </div>
             
-            {/* Manual Refresh Button */}
+            {/* Refresh Button (Reset) */}
             <button 
-                onClick={loadRecipes}
+                onClick={() => loadRecipes(true)}
                 disabled={loading}
                 className={`p-2 rounded-full bg-slate-50 text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-all active:rotate-180 ${loading ? 'animate-spin opacity-50' : ''}`}
                 title="새로고침"
@@ -135,12 +191,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
 
       {/* List Content */}
       <div className="space-y-4 relative z-0">
-        {loading ? (
-          <div className="flex flex-col justify-center items-center py-20 gap-4">
-            <div className="w-10 h-10 border-4 border-orange-50 border-t-[#ff5d01] rounded-full animate-spin"></div>
-            <p className="text-xs font-bold text-slate-400 animate-pulse">새로운 소식을 불러오는 중...</p>
-          </div>
-        ) : recipes.length === 0 ? (
+        {recipes.length === 0 && !loading ? (
           <div className="text-center py-24 bg-slate-50/50 rounded-[32px] border border-dashed border-slate-200">
             <p className="text-slate-300 text-3xl mb-3">🍳</p>
             <p className="text-slate-400 text-sm font-medium">
@@ -149,9 +200,9 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
           </div>
         ) : (
           <div className="grid gap-4">
-            {recipes.map((recipe) => (
+            {recipes.map((recipe, index) => (
               <button
-                key={recipe.id}
+                key={`${recipe.id}-${index}`}
                 onClick={() => onSelectRecipe(recipe)}
                 className="w-full bg-white rounded-[24px] p-4 shadow-sm border border-slate-100 text-left hover:border-orange-200 transition-all active:scale-[0.98] group"
               >
@@ -159,7 +210,7 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
                   {/* Thumbnail */}
                   <div className="w-20 h-20 rounded-[18px] bg-slate-50 overflow-hidden shrink-0 border border-slate-100 relative">
                     {recipe.imageUrl ? (
-                      <img src={recipe.imageUrl} alt={recipe.dishName} className="w-full h-full object-cover" />
+                      <img src={recipe.imageUrl} alt={recipe.dishName} className="w-full h-full object-cover" loading="lazy" />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-2xl">🥣</div>
                     )}
@@ -200,6 +251,19 @@ const CommunityView: React.FC<Props> = ({ onSelectRecipe, user }) => {
             ))}
           </div>
         )}
+
+        {/* Loading Indicator & Sentinel */}
+        <div ref={loadMoreRef} className="h-20 flex items-center justify-center">
+          {loading && (
+            <div className="flex items-center gap-2">
+                <div className="w-6 h-6 border-2 border-orange-50 border-t-[#ff5d01] rounded-full animate-spin"></div>
+                <span className="text-xs font-bold text-slate-400 animate-pulse">더 불러오는 중...</span>
+            </div>
+          )}
+          {!hasMore && recipes.length > 0 && (
+             <span className="text-xs text-slate-300 font-bold">모든 레시피를 다 봤어요! 🎉</span>
+          )}
+        </div>
       </div>
     </div>
   );
