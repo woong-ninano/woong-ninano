@@ -33,7 +33,13 @@ const App: React.FC = () => {
   const [convenienceType, setConvenienceType] = useState<'meal' | 'snack'>('meal');
 
   useEffect(() => {
-    window.history.replaceState({ step: Step.Welcome, activeTab: 'home' }, '', window.location.search);
+    // 초기 상태 설정 시 try-catch로 감싸서 보안 에러 방지
+    try {
+      window.history.replaceState({ step: Step.Welcome, activeTab: 'home' }, '', window.location.search);
+    } catch (e) {
+      console.warn("History API is restricted in this environment.");
+    }
+
     const handlePopState = (event: PopStateEvent) => {
       if (event.state) {
         setStep(event.state.step);
@@ -73,9 +79,21 @@ const App: React.FC = () => {
   const navigateTo = (nextStep: Step, nextTab: 'home' | 'community' = 'home', method: 'push' | 'replace' = 'push') => {
     setStep(nextStep);
     setActiveTab(nextTab);
-    const url = `?tab=${nextTab}&step=${nextStep}`;
-    if (method === 'push') window.history.pushState({ step: nextStep, activeTab: nextTab }, '', url);
-    else window.history.replaceState({ step: nextStep, activeTab: nextTab }, '', url);
+    
+    // History API 호출 시 발생할 수 있는 보안 에러(origin mismatch 등) 방지
+    try {
+      const url = `?tab=${nextTab}&step=${nextStep}`;
+      const state = { step: nextStep, activeTab: nextTab };
+      if (method === 'push') {
+        window.history.pushState(state, '', url);
+      } else {
+        window.history.replaceState(state, '', url);
+      }
+    } catch (e) {
+      // 샌드박스 환경이나 특정 브라우저 설정에서 pushState가 실패할 수 있음
+      // 앱의 핵심 로직(상태 업데이트)은 이미 위에서 수행되었으므로 조용히 무시하거나 로그만 남김
+      console.warn("URL update failed due to environment restrictions, but state was updated.", e);
+    }
   };
 
   const startGeneration = async (isRegen: boolean = false, overridePrompt?: string) => {
